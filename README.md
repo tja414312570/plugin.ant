@@ -12,3 +12,108 @@
 * 分布式事物
 ## now
 * 服务中心，客户端，服务端均在同一机器，双核8g，单线程7k，多线程3-4w的吞吐率
+
+#20200608
+* 基于nacos的服务中心
+服务端
+```xml
+Ant:{ 
+	##	基础配置
+	bufferType:"heap",	## 内存类型  heap 或 direct
+	timeout:30000,  ## 超时
+	process:10,	##处理消息时的线程数
+	checkTime:1000,	##每次消息检查时间间隔 毫秒
+	bufferSize:1024	,	## buffer大小
+	bufferMaxSize:20480 		##最大buffer大小
+	##	作为服务提供者必须填写
+	port:4280,##	对位服务端口
+	host:127.0.0.1,	## 对外服务ip
+	name:"queue", ##对外服务名
+	
+}
+nacos:{
+	host:"127.0.0.1",
+	port:"8858",
+	group:"queue",
+	name:"queue",
+	namespace:"",
+}
+```
+```java
+        PlugsFactory.getInstance().addPlugs(AntMeessageSerialHandler.class);//消息序列化
+	PlugsFactory.getInstance().addPlugs(DefaultAntClientServiceImpl.class);
+	AntNacosRuntime antNacosRuntime = new AntNacosRuntime("classpath:Ant.yc");
+	//启动Ant
+	AntContext antContext = AntFactory.build("classpath:Ant.yc");
+	antContext.init();
+	antContext.start();
+```
+消费端:
+```xml
+Ant:{ 
+	##	基础配置
+	bufferType:"heap",	## 内存类型  heap 或 direct
+	timeout:30000,  ## 超时
+	process:10,	##处理消息时的线程数
+	checkTime:1000,	##每次消息检查时间间隔 毫秒
+	bufferSize:1024	,	## buffer大小
+	bufferMaxSize:2048 		##最大buffer大小
+}
+nacos:{
+	host:"127.0.0.1",
+	port:"8858",
+	group:"queue",
+	name:"queue",
+	namespace:"",
+}
+```
+```java
+       PlugsFactory.getInstance().addPlugs(AntMeessageSerialHandler.class);
+	PlugsFactory.getInstance().addPlugs(AntProxyMapper.class);
+	AntNacosRuntime antNacosRuntime = new AntNacosRuntime("classpath:Ant.yc");
+	//		registerInstance：注册实例。
+	//启动Ant
+	AntContext antContext = AntFactory.build("classpath:Ant.yc");
+	antContext.init();
+	antContext.start();
+	System.out.println("启动完成");
+	System.out.println("========================");
+	AntService1 antService1 = PlugsFactory.getPlugsInstance(AntService1.class);
+	System.out.println("调用服务1:"+antService1);
+	System.out.println("调用服务1结果:"+antService1.add(111, 222));
+	AntService2 antService2 = PlugsFactory.getPlugsInstance(AntService2.class);
+	System.out.println("调用服务2:"+antService2);
+	System.out.println("调用服务2结果:"+antService2.add(333, 222));
+
+```
+antService1接口：客户端和服务端各一份
+```java
+package com.YaNan.test.ant;
+
+import com.YaNan.frame.ant.annotations.Ant;
+import com.YaNan.frame.plugin.annotations.Service;
+
+@Ant("queue")
+@Service
+public interface AntService1 {
+	public int add(int a,int b);
+}
+```
+antService1实现:服务端
+```java
+package com.YaNan.test.ant;
+
+import com.YaNan.frame.plugin.annotations.Register;
+
+@Register
+public class AntTest1 implements AntService1{
+
+	@Override
+	public int add(int a, int b) {
+		System.out.println("传送:"+a+"  "+b);
+		return a+b;
+	}
+
+}
+
+```
