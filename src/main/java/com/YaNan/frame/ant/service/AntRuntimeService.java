@@ -135,6 +135,8 @@ public class AntRuntimeService {
 		try {
 			long t1 = System.currentTimeMillis();
 			this.discoveryService = PlugsFactory.getPlugsInstance(AntDiscoveryService.class);
+			//设置运行时
+			discoveryService.setAntRuntimeService(this);
 			//检查服务
 			discoveryService.avaiable();
 			//判断是否服务提供者
@@ -153,14 +155,23 @@ public class AntRuntimeService {
 				proxy.execute();
 			}
 			checkAndStartSelectorThread();
-			logger.debug("start ant service success at "+(System.currentTimeMillis()-t1)/1000+" s");
+			logger.debug("ant service started at "+(System.currentTimeMillis()-t1)/1000+" s");
 			//扫描所有调用的类，获取需要调用的服务的名称
-			logger.debug("scan ant service");
-			List<String> serviceList = scanAntService();
-			//从服务中心下载服务并缓存到本地缓存
-			serviceList.forEach(serviceName -> {
-					addServiceFromDiscoveryService(serviceName);
+			executeProcess(new AbstractProcess() {
+				@Override
+				public void execute() {
+					logger.debug("start ant proxy scanner process");
+					long t1 = System.currentTimeMillis();
+					List<String> serviceList = scanAntService();
+					//从服务中心下载服务并缓存到本地缓存
+					serviceList.forEach(serviceName -> {
+						if(!serviceName.equals(getContextConfigure().getName()))
+							addServiceFromDiscoveryService(serviceName);
+					});
+					logger.debug("ant proxy scanner process completed at "+(System.currentTimeMillis()-t1)/1000+" s");
+				}
 			});
+			
 		}catch (Throwable e) {
 			throw new AntInitException("failed to start service",e);
 		}
@@ -328,9 +339,7 @@ public class AntRuntimeService {
 			SocketChannel socketChannel = SocketChannel.open();
 			socketChannel.configureBlocking(false);
 			socketChannel.connect(new InetSocketAddress(host,port));
-			System.out.println("阻塞钱");
 			socketChannel.register(selectorRunningService.getSelector(), SelectionKey.OP_CONNECT,providerSummary);
-			System.out.println("阻塞后");
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -373,7 +382,6 @@ public class AntRuntimeService {
 		return messageQueue;
 	}
 	public void handlerMapping(SocketChannel socketChannel, AntClientHandler handler) {
-		System.out.println("添加"+handler);
 		this.handlerMapping.put(socketChannel, handler);
 	}
 }

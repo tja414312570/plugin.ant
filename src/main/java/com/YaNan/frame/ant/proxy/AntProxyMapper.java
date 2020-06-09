@@ -36,7 +36,6 @@ public class AntProxyMapper {
 	 */
 	private String[] scanPath;
 	public void execute() {
-		System.out.println("执行代理扫描");
 		if(antRuntimeService == null)
 			throw new AntInitException("not Ant Runtime Context for the ant mapper");
 		antInvokeProxy = PlugsFactory.getPlugsInstance(AntInvokeProxy.class, antRuntimeService);
@@ -60,10 +59,7 @@ public class AntProxyMapper {
 							PlugsFactory.getInstance().addPlugsAuto(cls);
 							plug = PlugsFactory.getPlug(cls);
 						}
-						System.out.println("========"+cls);
-						System.out.println(plug);
 						plug.addRegister(register);
-						System.out.println(this);
 						//需要为每个接口实现一个对应的jdk代理对象
 						Object proxy = PlugsFactory.getPlugsInstanceByInsClass(plug.getDescription().getPlugClass(),
 								AntInvokeProxy.class,new Class<?>[]{AntRuntimeService.class},antRuntimeService);

@@ -206,7 +206,7 @@ public class AntClientHandler {
 		clientHandleLocal.set(this);
 		executeThread = Thread.currentThread();
 		try {
-			while (socketChannel.read(messageHandler.getReadBuffer()) > 0) {
+			while (socketChannel.isConnected() && socketChannel.read(messageHandler.getReadBuffer()) > 0) {
 				messageHandler.handleRead();
 			}
 			AntMessagePrototype message;
@@ -216,7 +216,6 @@ public class AntClientHandler {
 			}
 		} catch (AntMessageResolveException amre) {
 			logger.error("failed to read buffer",amre);
-			amre.printStackTrace();
 			if(this.clientType == ClientType.Provider || this.clientType == ClientType.Queen ) {
 				AntMessagePrototype amp = new AntMessagePrototype();
 				amp.setType(MessageType.EXCEPTION);

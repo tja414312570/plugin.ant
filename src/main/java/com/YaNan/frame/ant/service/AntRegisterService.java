@@ -51,10 +51,14 @@ public class AntRegisterService {
 	 */
 	private void enableRegisterCheck() {
 		if(registerCheckThread == null || !registerCheckThread.isAlive()) {
-			registerCheckThread = new Thread(registerCheckService);
-			registerCheckThread.setName("Ant-Regist-Check-Server");
-			registerCheckThread.setDaemon(true);
-			registerCheckThread.start();
+			synchronized (registerCheckService) {
+				if(registerCheckThread == null || !registerCheckThread.isAlive()) {
+					registerCheckThread = new Thread(registerCheckService);
+					registerCheckThread.setName("Ant-Regist-Check-Server");
+					registerCheckThread.setDaemon(true);
+					registerCheckThread.start();
+				}
+			}
 		}
 	}
 //	public static AntRegisterService getInstance(AntRuntimeService runtimeService) {
@@ -198,8 +202,10 @@ public class AntRegisterService {
 	 */
 	public void register(AntAbstractRegisterHandler antAbstractRegisterHandler) {
 		tryAcquire();
-		this.waitConnectionList.add(antAbstractRegisterHandler);
-		this.enableRegisterCheck();
+		if(!this.waitConnectionList .contains(antAbstractRegisterHandler)) {
+			this.waitConnectionList.add(antAbstractRegisterHandler);
+			this.enableRegisterCheck();
+		}
 	}
 	/**
 	 * 注册并锁定注册中心

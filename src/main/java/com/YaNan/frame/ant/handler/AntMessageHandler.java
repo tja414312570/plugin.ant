@@ -446,9 +446,7 @@ public class AntMessageHandler {
 					serialBuffer.put(ByteUtils.intToByte(len));
 					//写入参数内容
 					while(byteBuffer != null && byteBuffer.hasRemaining()) {
-						byte[] bytes = new byte[1];
-						byteBuffer.get(bytes);
-						serialBuffer.put(bytes);
+						serialBuffer.put(byteBuffer.get());
 					}
 					byteBuffer.clear();
 				}else {

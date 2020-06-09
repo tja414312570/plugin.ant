@@ -38,18 +38,13 @@ public class ObjectLock {
 		throw new LockNotFoundException(lockObject);
 	}
 	public void tryLock() {
-		System.out.println("=======================获取锁"+this.lockObject+"  "+atomicLock.get());
-		System.out.println(this);
 		long now = System.currentTimeMillis();
 		while(!atomicLock.compareAndSet(false, true)) {
 			if((System.currentTimeMillis() - now ) / 1000 > timeout)
 				throw new LockTimeoutException(lockObject,timeout,true);
 		}
-		System.out.println("=======================++++++++");
 	}
 	public void release() {
-		System.out.println("=======================释放锁锁"+this.lockObject+"  "+atomicLock.get());
-		System.out.println(this);
 		long now = System.currentTimeMillis();
 		while(!atomicLock.compareAndSet(true, false)) {
 			if((System.currentTimeMillis() - now ) / 1000 > timeout)

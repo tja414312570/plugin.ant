@@ -7,6 +7,7 @@ import com.YaNan.frame.ant.annotations.AntLock;
 //import com.YaNan.frame.ant.annotations.AntQueen;
 import com.YaNan.frame.ant.model.AntProvider;
 import com.YaNan.frame.ant.model.AntProviderSummary;
+import com.YaNan.frame.ant.service.AntRuntimeService;
 import com.YaNan.frame.plugin.annotations.Service;
 
 /**
@@ -30,8 +31,11 @@ public interface AntDiscoveryService {
 	void registerService(AntProvider antProvider) throws Exception;
 	/**
 	 * 判断服务提供是否可用
-	 * @return
 	 */
 	void avaiable() throws Exception;
+	/**
+	 * 注册AntRuntimeService
+	 */
+	void setAntRuntimeService(AntRuntimeService runtimeService);
 	
 }

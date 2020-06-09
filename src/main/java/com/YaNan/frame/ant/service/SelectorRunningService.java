@@ -42,7 +42,7 @@ public class SelectorRunningService implements Runnable{
 		AntClientHandler handler;
 			  while(true) {
 				  try {
-						if(selector.select(50) == 0) {
+						if(selector.select(50) == 0) {//强制50ms执行一次，因为需要先select后register，造成死锁
 							continue;
 						}
 						Iterator<SelectionKey> keyIter = selector.selectedKeys().iterator();
