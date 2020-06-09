@@ -1,7 +1,9 @@
 package com.YaNan.frame.ant.utils;
 
+import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.stream.Collectors;
 
 import com.YaNan.frame.ant.exception.AntMessageLockException;
 import com.YaNan.frame.ant.exception.AntRequestTimeoutException;
@@ -113,6 +115,17 @@ public class MessageQueue {
 			return;
 		lock.setException(t);
 		lock.unLock();
+	}
+	/**
+	 * 获取所有的未处理完成的消息
+	 * @param ruid
+	 * @return 
+	 */
+	public List<AntMessagePrototype> getAllProcessingMessage(String serviceName){
+		return lockList.stream()
+				.filter(lock->serviceName.equals(lock.getMessage().getService()))
+				.map(lock->lock.getMessage())
+				.collect(Collectors.toList());
 	}
 	/**
 	 * 通知请求已有结果

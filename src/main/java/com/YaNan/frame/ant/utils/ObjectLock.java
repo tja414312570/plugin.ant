@@ -51,4 +51,7 @@ public class ObjectLock {
 				throw new LockTimeoutException(lockObject,timeout,false);
 		}
 	}
+	public boolean isLock() {
+		return atomicLock.get() == true;
+	}
 }

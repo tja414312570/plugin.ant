@@ -137,8 +137,8 @@ public class AntRegisterService {
 				}
 			}
 		}
-		if(this.waitConnectionList.size() == 0 && this.waitRegisterList.size() == 0 )
-			registerCheckService.close();
+//		if(this.waitConnectionList.size() == 0 && this.waitRegisterList.size() == 0 )
+//			registerCheckService.close();
 	}
 	
 	public static class AntRegisterCheckService implements Runnable{

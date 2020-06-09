@@ -17,6 +17,7 @@ import com.YaNan.frame.ant.exception.AntMessageWriteException;
 import com.YaNan.frame.ant.interfaces.AntMessageSerialization;
 import com.YaNan.frame.ant.interfaces.BufferReady;
 import com.YaNan.frame.ant.model.AntMessagePrototype;
+import com.YaNan.frame.plugin.PlugNotFound;
 import com.YaNan.frame.plugin.PlugsFactory;
 import com.YaNan.frame.utils.ByteUtils;
 
@@ -107,7 +108,13 @@ public class AntMessageHandler {
 		clientHandleLocal.set(this);
 		this.clientHandler = clientHandler;
 		messageList = new LinkedList<AntMessagePrototype>();
-		this.serailzationHandler = PlugsFactory.getPlugsInstance(AntMessageSerialization.class);
+		try {
+			this.serailzationHandler = PlugsFactory.getPlugsInstance(AntMessageSerialization.class);
+		}catch(PlugNotFound e) {
+			PlugsFactory.getInstance().addPlugs(AntMeessageSerialHandler.class);
+			this.serailzationHandler = PlugsFactory.getPlugsInstance(AntMessageSerialization.class);
+		}
+		
 	}
 	public void setBuffer(ByteBuffer readBuffer,ByteBuffer writeBuffer) {
 		this.readBuffer = readBuffer;

@@ -8,6 +8,9 @@ public class AntRuntimeException extends RuntimeException {
 	public AntRuntimeException(String msg,Throwable t) {
 		super(msg,t);
 	}
+	public AntRuntimeException(Throwable t) {
+		super(t);
+	}
 	/**
 	 * 
 	 */

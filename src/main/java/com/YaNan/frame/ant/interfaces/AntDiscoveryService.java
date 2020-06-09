@@ -2,9 +2,6 @@ package com.YaNan.frame.ant.interfaces;
 
 import java.util.List;
 
-import com.YaNan.frame.ant.annotations.Ant;
-import com.YaNan.frame.ant.annotations.AntLock;
-//import com.YaNan.frame.ant.annotations.AntQueen;
 import com.YaNan.frame.ant.model.AntProvider;
 import com.YaNan.frame.ant.model.AntProviderSummary;
 import com.YaNan.frame.ant.service.AntRuntimeService;
@@ -15,8 +12,6 @@ import com.YaNan.frame.plugin.annotations.Service;
  * @author yanan
  *
  */
-@Ant//表明此接口可以通过Ant代理
-@AntLock(auto = false) //注解表明加锁，auto = false表示不自动释放锁
 @Service //表明需要被代理
 public interface AntDiscoveryService {
 	/**
@@ -24,7 +19,7 @@ public interface AntDiscoveryService {
 	 * @param name 服务名
 	 * @return
 	 */
-	List<AntProviderSummary>  downloadProviderList(String name) throws Exception;
+	List<AntProviderSummary> downloadProviderList(String name) throws Exception;
 	/**
 	 * 提供端注册服务
 	 */
@@ -37,5 +32,9 @@ public interface AntDiscoveryService {
 	 * 注册AntRuntimeService
 	 */
 	void setAntRuntimeService(AntRuntimeService runtimeService);
-	
+	/**
+	 * 注销服务
+	 * @param providerSummary
+	 */
+	void deregisterService(AntProviderSummary providerSummary) throws Exception;
 }

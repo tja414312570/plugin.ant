@@ -165,8 +165,13 @@ public class AntRuntimeService {
 					List<String> serviceList = scanAntService();
 					//从服务中心下载服务并缓存到本地缓存
 					serviceList.forEach(serviceName -> {
-						if(!serviceName.equals(getContextConfigure().getName()))
-							addServiceFromDiscoveryService(serviceName);
+						try {
+							if(!serviceName.equals(getContextConfigure().getName()))
+								addServiceFromDiscoveryService(serviceName);
+						}catch(Throwable t) {
+							logger.error(t.getMessage(),t);
+						}
+						
 					});
 					logger.debug("ant proxy scanner process completed at "+(System.currentTimeMillis()-t1)/1000+" s");
 				}
@@ -176,6 +181,57 @@ public class AntRuntimeService {
 			throw new AntInitException("failed to start service",e);
 		}
 		
+	}
+	/**
+	 * 尝试恢复服务
+	 * @param handler
+	 * @param t
+	 * @return 
+	 */
+	public void tryRecoveryServiceAndNotifyDiscoveryService(AntClientHandler handler,Throwable t) {
+		ObjectLock lock = null;
+		Assert.isNull(handler, "handelr name is null!");
+		AntProviderSummary antProviderSummary = handler.getAttribute(AntProviderSummary.class);
+		if(antProviderSummary == null)
+			return;
+		String serviceName = antProviderSummary.getName();
+		lock = ObjectLock.getLock(serviceName, this.getContextConfigure().getTimeout());
+		if(lock.isLock())
+			return;
+		lock.tryLock();
+		if(handlerMapping.containsKey(handler.getSocketChannel()))
+			handlerMapping.remove(handler.getSocketChannel());
+		else if(serviceProviderMap.containsKey(serviceName)) {
+			lock.release();
+			return;
+		}
+		if(serviceProviderMap.containsKey(serviceName))
+			serviceProviderMap.remove(serviceName);
+		int i = 0 ;
+		lock.release();
+		for(;;) {
+			try {
+				if(i++ > 10)
+					break;
+				lock = ObjectLock.getLock(serviceName, this.getContextConfigure().getTimeout());
+				lock.tryLock();
+				logger.error("try to recovery service "+antProviderSummary.getName()+" ["+i+"]");
+				List<AntProviderSummary>  result = discoveryService.downloadProviderList(serviceName);
+				logger.debug("get service list for "+serviceName+" "+result);
+				Assert.isTrue(result == null || result.size() == 0,"could not found ant provider server :"+serviceName);
+				antProviderSummary = result.get(0);
+				clientService(antProviderSummary);
+				if(serviceProviderMap.containsKey(serviceName))
+					return;
+			} catch (Throwable e) {
+				if(lock != null) {
+					lock.release();
+				}
+			}
+		}
+		List<AntMessagePrototype> messageList = this.messageQueue.getAllProcessingMessage(serviceName);
+		messageList.forEach(e->messageQueue.notifyException(e.getRID(), new AntRequestException("failed to invoke ant service!")));
+		throw new AntRuntimeException("try to recovery service "+antProviderSummary.getName()+" failed,give up at ["+i+"]");
 	}
 	public void addServiceFromDiscoveryService(String serviceName) {
 		ObjectLock lock = null;
@@ -189,12 +245,13 @@ public class AntRuntimeService {
 			logger.debug("get service list for "+serviceName+" "+result);
 			Assert.isTrue(result == null || result.size() == 0,"could not found ant provider server :"+serviceName);
 			AntProviderSummary antProviderSummary = result.get(0);
-			clientService(antProviderSummary,antProviderSummary.getHost(),antProviderSummary.getPort());
+			clientService(antProviderSummary);
 		} catch (Throwable e) {
 			logger.error("add service "+serviceName+" failed!",e);
 			if(lock != null) {
 				lock.release();
 			}
+			throw new AntRuntimeException(e);
 		}
 	}
 	private List<String> scanAntService() {
@@ -215,7 +272,7 @@ public class AntRuntimeService {
 					logger.debug("enable ant selector runtime service!");
 					selectorThread = new Thread(selectorRunningService);
 					selectorThread.setName("Ant Runtime Selector Thread");
-	//				selectorThread.setDaemon(daemon);
+//					selectorThread.setDaemon(daemon);
 					selectorThread.start();
 				}
 			}
@@ -333,12 +390,12 @@ public class AntRuntimeService {
 	 * @param host
 	 * @param port
 	 */
-	public void clientService(AntProviderSummary providerSummary,String host,int port) {
+	public void clientService(AntProviderSummary providerSummary) {
 		try {
 			logger.debug("connection to server "+providerSummary);
 			SocketChannel socketChannel = SocketChannel.open();
 			socketChannel.configureBlocking(false);
-			socketChannel.connect(new InetSocketAddress(host,port));
+			socketChannel.connect(new InetSocketAddress(providerSummary.getHost(),providerSummary.getPort()));
 			socketChannel.register(selectorRunningService.getSelector(), SelectionKey.OP_CONNECT,providerSummary);
 		} catch (Exception e) {
 			e.printStackTrace();

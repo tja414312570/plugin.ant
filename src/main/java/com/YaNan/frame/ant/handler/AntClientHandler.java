@@ -7,6 +7,7 @@ import java.net.SocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.SocketChannel;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -19,11 +20,13 @@ import com.YaNan.frame.ant.exception.AntMessageResolveException;
 import com.YaNan.frame.ant.exception.AntRuntimeException;
 import com.YaNan.frame.ant.interfaces.BufferReady;
 import com.YaNan.frame.ant.model.AntMessagePrototype;
+import com.YaNan.frame.ant.model.AntProviderSummary;
 import com.YaNan.frame.ant.service.AntRuntimeService;
 import com.YaNan.frame.ant.type.BufferType;
 import com.YaNan.frame.ant.type.ClientType;
 import com.YaNan.frame.ant.type.MessageType;
 import com.YaNan.frame.ant.utils.MessageProcesser;
+import com.sun.javafx.scene.control.skin.FXVK.Type;
 
 /**
  * 一个通道对应一个handler
@@ -34,7 +37,8 @@ public class AntClientHandler {
 	@Override
 	public String toString() {
 		return "AntClientHandler [id=" + id + ", remoteAddress=" + remoteAddress
-				+ ", runtimeService=" + runtimeService + "]";
+				+ ", runtimeService=" + runtimeService + ", clientType=" + clientType
+				+ ", startTime=" + new Date(clientTime) +"]";
 	}
 	private static Logger logger = LoggerFactory.getLogger(AntClientHandler.class);
 	/**
@@ -184,7 +188,7 @@ public class AntClientHandler {
 			socketChannel.write(buffer);
 			buffer.compact();
 		} catch (IOException e) {
-			e.printStackTrace();
+			runtimeService.tryRecoveryServiceAndNotifyDiscoveryService(this, e);
 			throw new WriteAbortedException("ant message write failed!", e);
 		}
 		buffer.flip();
@@ -203,6 +207,8 @@ public class AntClientHandler {
 		this.clientType = clientType;
 	}
 	public synchronized void handleRead(SelectionKey key) {
+		if(closeCause != null)
+			return;
 		clientHandleLocal.set(this);
 		executeThread = Thread.currentThread();
 		try {
@@ -224,9 +230,10 @@ public class AntClientHandler {
 				amp.setInvokeParmeters(amre.getMessage());
 				this.write(amp);
 			}
-		} catch (IOException e) {
+		} catch (Throwable e) {
 			logger.error("failed to read buffer",e);
-			e.printStackTrace();
+			this.close(e);
+			runtimeService.tryRecoveryServiceAndNotifyDiscoveryService(this, e);
 		}
 	}
 	public void handlWrite(SelectionKey key) {

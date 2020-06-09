@@ -10,6 +10,7 @@ import com.YaNan.frame.ant.handler.AntClientHandler;
 import com.YaNan.frame.ant.model.AntRequest;
 import com.YaNan.frame.ant.service.AntRuntimeService;
 import com.YaNan.frame.plugin.annotations.Register;
+import com.YaNan.frame.plugin.annotations.Support;
 import com.YaNan.frame.plugin.handler.InvokeHandler;
 import com.YaNan.frame.plugin.handler.MethodHandler;
 
@@ -19,6 +20,7 @@ import com.YaNan.frame.plugin.handler.MethodHandler;
  * @author yanan
  *
  */
+@Support(Ant.class)
 @Register(priority = Integer.MAX_VALUE)
 public class AntInvokeProxy implements InvokeHandler {
 
