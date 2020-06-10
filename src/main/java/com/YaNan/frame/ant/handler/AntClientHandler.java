@@ -28,7 +28,6 @@ import com.YaNan.frame.ant.type.ClientType;
 import com.YaNan.frame.ant.type.MessageType;
 import com.YaNan.frame.ant.utils.MessageProcesser;
 import com.YaNan.frame.ant.utils.ObjectLock;
-import com.sun.javafx.scene.control.skin.FXVK.Type;
 
 /**
  * 一个通道对应一个handler
@@ -190,7 +189,7 @@ public class AntClientHandler {
 			socketChannel.write(buffer);
 			buffer.compact();
 		} catch (IOException e) {
-			runtimeService.tryRecoveryServiceAndNotifyDiscoveryService(this, e);
+			runtimeService.tryRecoveryServiceAndNotifyDiscoveryService(this);
 			throw new WriteAbortedException("ant message write failed!", e);
 		}
 		buffer.flip();
@@ -243,7 +242,7 @@ public class AntClientHandler {
 			runtimeService.executeProcess(new AbstractProcess() {
 				@Override
 				public void execute() {
-					runtimeService.tryRecoveryServiceAndNotifyDiscoveryService(self, e);
+					runtimeService.tryRecoveryServiceAndNotifyDiscoveryService(self);
 				}
 			});
 		}
@@ -325,6 +324,8 @@ public class AntClientHandler {
 	 */
 	public void close(Throwable cause) {
 		try {
+			if(this.closeCause != null)
+				return;
 			AntProviderSummary summary = this.getAttribute(AntProviderSummary.class);
     		if(summary != null) {
     			ObjectLock.getLock(summary.getName()).release();

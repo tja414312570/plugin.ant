@@ -87,6 +87,9 @@ public class AntRuntimeService {
 	private final Object selectObjectLock = new Object();
 	private AntDiscoveryService discoveryService;
 	private int serverPort;
+	public int getServerPort() {
+		return serverPort;
+	}
 	public int getRID(){
 		int rid = idCount.incrementAndGet();
 		if(rid >= MAX_ID_NUM)
@@ -190,7 +193,7 @@ public class AntRuntimeService {
 	 * @param t
 	 * @return 
 	 */
-	public void tryRecoveryServiceAndNotifyDiscoveryService(AntClientHandler handler,Throwable t) {
+	public void tryRecoveryServiceAndNotifyDiscoveryService(AntClientHandler handler) {
 		ObjectLock lock = null;
 		Assert.isNull(handler, "handelr name is null!");
 		AntProviderSummary antProviderSummary = handler.getAttribute(AntProviderSummary.class);
@@ -377,7 +380,6 @@ public class AntRuntimeService {
 			String[] ports = portStr.split("-");
 			int port = Integer.valueOf(ports[0]);
 			int maxPort = ports.length>1?Integer.valueOf(ports[1]):port;
-			System.out.println(maxPort);
 			boolean failed = true;
 			while(port <= maxPort) {
 				try {

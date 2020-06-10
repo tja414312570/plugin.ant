@@ -24,7 +24,6 @@ public class AntChannelProcess extends AbstractProcess {
 
 	@Override
 	public void execute() {
-		System.out.println("执行:" + ops + "    " + handler);
 		if (ops == SelectionKey.OP_READ) {
 			handler.handleRead(key);
 		} else if (ops == SelectionKey.OP_WRITE) {

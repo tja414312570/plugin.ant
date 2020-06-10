@@ -11,7 +11,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.YaNan.frame.ant.handler.AntClientHandler;
-import com.YaNan.frame.ant.handler.AntRegisterHandler;
 import com.YaNan.frame.ant.implement.AntChannelProcess;
 import com.YaNan.frame.ant.model.AntProviderSummary;
 import com.YaNan.frame.ant.utils.ObjectLock;
