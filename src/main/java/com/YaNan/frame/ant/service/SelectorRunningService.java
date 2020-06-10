@@ -11,7 +11,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.YaNan.frame.ant.handler.AntClientHandler;
+import com.YaNan.frame.ant.handler.AntRegisterHandler;
 import com.YaNan.frame.ant.implement.AntChannelProcess;
+import com.YaNan.frame.ant.model.AntProviderSummary;
+import com.YaNan.frame.ant.utils.ObjectLock;
 
 /**
  * Selector运行时服务
@@ -20,7 +23,7 @@ import com.YaNan.frame.ant.implement.AntChannelProcess;
  */
 public class SelectorRunningService implements Runnable{
 	private AntRuntimeService runtimeService;
-	private static Logger logger = LoggerFactory.getLogger(AntRuntimeService.class);
+	private static Logger logger = LoggerFactory.getLogger(SelectorRunningService.class);
 	private Selector selector;
 	
 	public Selector getSelector() {
@@ -47,44 +50,54 @@ public class SelectorRunningService implements Runnable{
 						}
 						Iterator<SelectionKey> keyIter = selector.selectedKeys().iterator();
 			            while (keyIter.hasNext()) {
-			                SelectionKey key = keyIter.next();
-			                //客户端连接到此设备
-			                if (key.isAcceptable()){  
-			                	logger.debug("accept a service connection!");
-			                	socketChannel = ((ServerSocketChannel)key.channel()).accept();
-			                	logger.debug("service connection ip:"+socketChannel.getRemoteAddress());
-			        	        socketChannel.configureBlocking(false);
-			        	        socketChannel.register(key.selector(), SelectionKey.OP_READ);
-			        	        handler = new AntClientHandler(socketChannel,runtimeService);
-			        	        runtimeService.executeProcess(new AntChannelProcess(handler,SelectionKey.OP_ACCEPT,key));
-			        	        runtimeService.getAntClientRegisterService().register(handler);
-			                	runtimeService.handlerMapping(socketChannel, handler);
-			                	keyIter.remove();
-			                	continue;
-			                }  
-			                socketChannel = (SocketChannel) key.channel();
-			                //连接到目标
-			                if(key.isConnectable()) {
-			                	logger.debug("connect to service success:"+socketChannel.getRemoteAddress());
-			                	handler = new AntClientHandler(socketChannel,runtimeService);
-			                	key.interestOps(SelectionKey.OP_READ | SelectionKey.OP_WRITE);
-			                	runtimeService.handlerMapping(socketChannel, handler);
-			                	runtimeService.executeProcess(new AntChannelProcess(handler,SelectionKey.OP_CONNECT,key));
-			                }
-			                handler = runtimeService.getHandler(socketChannel);
-			                if(handler == null) {
-			                	socketChannel.close();
-			                }
-			                //可读
-			                if(key.isReadable()) {
-			                	runtimeService.executeProcess(new AntChannelProcess(handler,SelectionKey.OP_READ,key));
-//			                	handler.handleRead(key);
-			                }
-			                //可写
-			                if(key.isWritable()) {
-//			                	handler.handlWrite(key);
-			                }
-			                keyIter.remove(); 
+			            	SelectionKey key = keyIter.next();
+			            	keyIter.remove();
+			            	try {
+				                //客户端连接到此设备
+				                if (key.isAcceptable()){  
+				                	logger.debug("accept a service connection!");
+				                	socketChannel = ((ServerSocketChannel)key.channel()).accept();
+				                	logger.debug("service connection ip:"+socketChannel.getRemoteAddress());
+				        	        socketChannel.configureBlocking(false);
+				        	        socketChannel.register(key.selector(), SelectionKey.OP_READ);
+				        	        handler = new AntClientHandler(socketChannel,runtimeService);
+				        	        runtimeService.executeProcess(new AntChannelProcess(handler,SelectionKey.OP_ACCEPT,key));
+				        	        runtimeService.getAntClientRegisterService().register(handler);
+				                	runtimeService.handlerMapping(socketChannel, handler);
+				                	continue;
+				                }  
+				                socketChannel = (SocketChannel) key.channel();
+				                //连接到目标
+				                if(key.isConnectable()) {
+				                	logger.debug("connect to service success:"+socketChannel.getRemoteAddress());
+				                	handler = new AntClientHandler(socketChannel,runtimeService);
+				                	key.interestOps(SelectionKey.OP_READ | SelectionKey.OP_WRITE);
+				                	runtimeService.handlerMapping(socketChannel, handler);
+				                	runtimeService.executeProcess(new AntChannelProcess(handler,SelectionKey.OP_CONNECT,key));
+				                }
+				                handler = runtimeService.getHandler(socketChannel);
+				                if(handler == null) {
+				                	socketChannel.close();
+				                }
+				                //可读
+				                if(key.isReadable()) {
+				        			handler.handleRead(key);
+//				                	handler.handleRead(key);
+//				                	runtimeService.executeProcess(new AntChannelProcess(handler,SelectionKey.OP_READ,key));
+//				                	handler.handleRead(key);
+				                }
+				                //可写
+				                if(key.isWritable()) {
+//				                	handler.handlWrite(key);
+				                }
+			            	}catch(Throwable e) {
+			            		AntProviderSummary summary = (AntProviderSummary) key.attachment();
+			            		if(summary != null) {
+			            			ObjectLock.getLock(summary.getName()).release();
+			            		}
+			            			
+			            	}
+			                
 			            }
 				} catch (IOException e) {
 					e.printStackTrace();

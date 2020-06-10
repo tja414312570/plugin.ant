@@ -108,7 +108,7 @@ public class AntFactory {
 		Assert.isNull(propertiesWrapper.getProperty("Ant.name"),"Ant name properties is null");
 		antConfig.setName(propertiesWrapper.getProperty("Ant.name","plugin.server"));
 		antConfig.setProcess(propertiesWrapper.getInt("Ant.process", 1));
-		antConfig.setPort(propertiesWrapper.getInt("Ant.server.port", 4281));
+		antConfig.setPort(propertiesWrapper.getProperty("Ant.server.port", "4281"));
 		antConfig.setTimeout(propertiesWrapper.getInt("Ant.timeout", 30000));
 		return new AntContext(antConfig);
 	}

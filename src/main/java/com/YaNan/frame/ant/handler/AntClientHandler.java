@@ -15,6 +15,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.YaNan.frame.ant.AntContextConfigure;
+import com.YaNan.frame.ant.abstracts.AbstractProcess;
 import com.YaNan.frame.ant.exception.AntInitException;
 import com.YaNan.frame.ant.exception.AntMessageResolveException;
 import com.YaNan.frame.ant.exception.AntRuntimeException;
@@ -26,6 +27,7 @@ import com.YaNan.frame.ant.type.BufferType;
 import com.YaNan.frame.ant.type.ClientType;
 import com.YaNan.frame.ant.type.MessageType;
 import com.YaNan.frame.ant.utils.MessageProcesser;
+import com.YaNan.frame.ant.utils.ObjectLock;
 import com.sun.javafx.scene.control.skin.FXVK.Type;
 
 /**
@@ -207,12 +209,14 @@ public class AntClientHandler {
 		this.clientType = clientType;
 	}
 	public synchronized void handleRead(SelectionKey key) {
-		if(closeCause != null)
+		if(closeCause != null) {
+			key.cancel();
 			return;
+		}
 		clientHandleLocal.set(this);
 		executeThread = Thread.currentThread();
 		try {
-			while (socketChannel.isConnected() && socketChannel.read(messageHandler.getReadBuffer()) > 0) {
+			while (socketChannel.read(messageHandler.getReadBuffer()) > 0) {
 				messageHandler.handleRead();
 			}
 			AntMessagePrototype message;
@@ -230,10 +234,18 @@ public class AntClientHandler {
 				amp.setInvokeParmeters(amre.getMessage());
 				this.write(amp);
 			}
+			key.cancel();
 		} catch (Throwable e) {
+			key.cancel();
 			logger.error("failed to read buffer",e);
 			this.close(e);
-			runtimeService.tryRecoveryServiceAndNotifyDiscoveryService(this, e);
+			AntClientHandler self = this;
+			runtimeService.executeProcess(new AbstractProcess() {
+				@Override
+				public void execute() {
+					runtimeService.tryRecoveryServiceAndNotifyDiscoveryService(self, e);
+				}
+			});
 		}
 	}
 	public void handlWrite(SelectionKey key) {
@@ -313,6 +325,10 @@ public class AntClientHandler {
 	 */
 	public void close(Throwable cause) {
 		try {
+			AntProviderSummary summary = this.getAttribute(AntProviderSummary.class);
+    		if(summary != null) {
+    			ObjectLock.getLock(summary.getName()).release();
+    		}
 			logger.debug("the socket channel close，info :"+socketChannel.getRemoteAddress().toString()+"\n cause:"+cause.getMessage(),cause);
 			this.closeCause = cause;
 			socketChannel.close();

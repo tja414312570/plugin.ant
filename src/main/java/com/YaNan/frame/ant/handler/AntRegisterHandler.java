@@ -14,6 +14,7 @@ import com.YaNan.frame.ant.model.AntCustomer;
 import com.YaNan.frame.ant.model.AntProviderSummary;
 import com.YaNan.frame.ant.model.AntRequest;
 import com.YaNan.frame.ant.model.RegisterResult;
+import com.YaNan.frame.ant.utils.ObjectLock;
 import com.YaNan.frame.utils.reflect.cache.ClassHelper;
 
 /**
@@ -62,6 +63,8 @@ public class AntRegisterHandler extends AntAbstractRegisterHandler{
 			this.clientHandler.releaseWriteLock();
 			clientHandler.getRuntimeService().getAntRegisterServcie().releaseLock();
 		}catch(Throwable t) {
+			AntProviderSummary sum = this.clientHandler.getAttribute(AntProviderSummary.class);
+			ObjectLock.getLock(sum.getName()).release();
 			throw new AntRegisterRuntimeException(t.getMessage(),t);
 		}
 	

@@ -20,8 +20,7 @@ public class AntThreadFactory implements ThreadFactory{
           namePrefix = "Ant-process-pool-thread-"+
         		  				context.getContextConfigure().getName()+
                                 "-"+
-                                context.getContextConfigure().getPort()+
-                                "-";
+                                context.getContextConfigure().getMaxProcess();
       }
 
       public Thread newThread(Runnable r) {

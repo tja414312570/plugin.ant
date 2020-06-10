@@ -39,6 +39,7 @@ import com.YaNan.frame.ant.utils.MessageProcesser;
 import com.YaNan.frame.ant.utils.MessageQueue;
 import com.YaNan.frame.ant.utils.ObjectLock;
 import com.YaNan.frame.plugin.PlugsFactory;
+import com.YaNan.frame.utils.StringUtil;
 import com.YaNan.frame.utils.asserts.Assert;
 import com.YaNan.frame.utils.resource.PackageScanner;
 import com.YaNan.frame.utils.resource.ResourceManager;
@@ -85,6 +86,7 @@ public class AntRuntimeService {
 	
 	private final Object selectObjectLock = new Object();
 	private AntDiscoveryService discoveryService;
+	private int serverPort;
 	public int getRID(){
 		int rid = idCount.incrementAndGet();
 		if(rid >= MAX_ID_NUM)
@@ -140,20 +142,20 @@ public class AntRuntimeService {
 			//检查服务
 			discoveryService.avaiable();
 			//判断是否服务提供者
-			if(antContext.getContextConfigure().getPort()>0) {
+			if(StringUtil.isNotEmpty(antContext.getContextConfigure().getPort())) {
+				startProvider();
 				AntProvider antProvider = new AntProvider();
 				antProvider.setHost(this.getContextConfigure().getHost());
-				antProvider.setPort(this.getContextConfigure().getPort());
+				antProvider.setPort(this.serverPort);
 				antProvider.setName(this.antContext.getContextConfigure().getName());
 				logger.debug("try regist ant service "+antProvider);
 				//注册服务
 				discoveryService.registerService(antProvider);
-				startProvider();
 				//开启服务提供者节点
-			}else {//客户端则扫描
-				AntProxyMapper proxy = PlugsFactory.getPlugsInstance(AntProxyMapper.class,this,ResourceManager.classPaths());
-				proxy.execute();
-			}
+			}//客户端则扫描
+			AntProxyMapper proxy = PlugsFactory.getPlugsInstance(AntProxyMapper.class,this,ResourceManager.classPaths());
+			proxy.execute();
+			
 			checkAndStartSelectorThread();
 			logger.debug("ant service started at "+(System.currentTimeMillis()-t1)/1000+" s");
 			//扫描所有调用的类，获取需要调用的服务的名称
@@ -213,16 +215,30 @@ public class AntRuntimeService {
 			try {
 				if(i++ > 10)
 					break;
+				AntClientHandler antClientHandler;
+				//如果重新连接，重新发送未完成的数据
+				if((antClientHandler = serviceProviderMap.get(serviceName)) != null) {
+					//获取所有的未完成的请求
+					List<AntMessagePrototype> list = messageQueue.getAllProcessingMessage(serviceName);
+					//使用新的Handler继续发送消息
+					list.forEach(message->antClientHandler.write(message));
+					return;
+				}
 				lock = ObjectLock.getLock(serviceName, this.getContextConfigure().getTimeout());
 				lock.tryLock();
 				logger.error("try to recovery service "+antProviderSummary.getName()+" ["+i+"]");
-				List<AntProviderSummary>  result = discoveryService.downloadProviderList(serviceName);
-				logger.debug("get service list for "+serviceName+" "+result);
-				Assert.isTrue(result == null || result.size() == 0,"could not found ant provider server :"+serviceName);
-				antProviderSummary = result.get(0);
-				clientService(antProviderSummary);
-				if(serviceProviderMap.containsKey(serviceName))
-					return;
+				AntProviderSummary providerSummary = discoveryService.getService(serviceName);
+				logger.debug("get service for "+serviceName+" info "+antProviderSummary);
+				Assert.isNull(providerSummary,()->
+					{
+						try {
+							Thread.sleep(this.getContextConfigure().getRetryInterval());
+						} catch (InterruptedException e1) {
+							e1.printStackTrace();
+						}
+					}
+				);
+				clientService(providerSummary);
 			} catch (Throwable e) {
 				if(lock != null) {
 					lock.release();
@@ -241,13 +257,12 @@ public class AntRuntimeService {
 				return;
 			lock = ObjectLock.getLock(serviceName, this.getContextConfigure().getTimeout());
 			lock.tryLock();
-			List<AntProviderSummary>  result = discoveryService.downloadProviderList(serviceName);
-			logger.debug("get service list for "+serviceName+" "+result);
-			Assert.isTrue(result == null || result.size() == 0,"could not found ant provider server :"+serviceName);
-			AntProviderSummary antProviderSummary = result.get(0);
-			clientService(antProviderSummary);
+			AntProviderSummary providerSummary = discoveryService.getService(serviceName);
+			logger.debug("get service for "+serviceName+" info "+providerSummary);
+			Assert.isNull(providerSummary,"could not found ant provider server :"+serviceName);
+			clientService(providerSummary);
 		} catch (Throwable e) {
-			logger.error("add service "+serviceName+" failed!",e);
+			logger.error("add service ["+serviceName+"] failed!",e);
 			if(lock != null) {
 				lock.release();
 			}
@@ -357,11 +372,29 @@ public class AntRuntimeService {
 		try {
 			logger.debug("enable ant provider service");
 			logger.debug("ant provider service name:"+antContext.getContextConfigure().getName());
-			logger.debug("listening server port:"+antContext.getContextConfigure().getPort());
 			ServerSocketChannel serverSocketChannel = ServerSocketChannel.open();
-			serverSocketChannel.bind(
-					new InetSocketAddress(
-							antContext.getContextConfigure().getPort()));
+			String portStr = antContext.getContextConfigure().getPort();
+			String[] ports = portStr.split("-");
+			int port = Integer.valueOf(ports[0]);
+			int maxPort = ports.length>1?Integer.valueOf(ports[1]):port;
+			System.out.println(maxPort);
+			boolean failed = true;
+			while(port <= maxPort) {
+				try {
+					serverSocketChannel.bind(
+							new InetSocketAddress(
+									Integer.valueOf(port)));
+					failed = false;
+					this.serverPort = port;
+					break;
+				}catch (IOException e) {
+					logger.info("port ["+port+"] is occupied!",e);
+					port++;
+				}
+			}
+			if(failed)
+				throw new IOException("port is occupied");
+			logger.debug("listening server port:"+this.serverPort);
 			serverSocketChannel.configureBlocking(false);
 			serverSocketChannel.register(selectorRunningService.getSelector(), SelectionKey.OP_ACCEPT);
 		} catch (IOException e) {
@@ -389,17 +422,14 @@ public class AntRuntimeService {
 	 * @param providerSummary
 	 * @param host
 	 * @param port
+	 * @throws IOException 
 	 */
-	public void clientService(AntProviderSummary providerSummary) {
-		try {
-			logger.debug("connection to server "+providerSummary);
-			SocketChannel socketChannel = SocketChannel.open();
-			socketChannel.configureBlocking(false);
-			socketChannel.connect(new InetSocketAddress(providerSummary.getHost(),providerSummary.getPort()));
-			socketChannel.register(selectorRunningService.getSelector(), SelectionKey.OP_CONNECT,providerSummary);
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
+	public void clientService(AntProviderSummary providerSummary) throws IOException {
+		logger.debug("connection to server "+providerSummary);
+		SocketChannel socketChannel = SocketChannel.open();
+		socketChannel.configureBlocking(false);
+		socketChannel.connect(new InetSocketAddress(providerSummary.getHost(),providerSummary.getPort()));
+		socketChannel.register(selectorRunningService.getSelector(), SelectionKey.OP_CONNECT,providerSummary);
 	}
 	/**
 	 * 获取一个连接服务
@@ -410,6 +440,7 @@ public class AntRuntimeService {
 		AntClientHandler antClientHandler = this.serviceProviderMap.get(name);
 		if(antClientHandler == null) {
 			addServiceFromDiscoveryService(name);
+			ObjectLock.getLock(name).tryLock();
 		}
 		antClientHandler = this.serviceProviderMap.get(name);
 		if(antClientHandler == null) {

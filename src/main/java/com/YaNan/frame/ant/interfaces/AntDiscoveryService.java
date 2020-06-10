@@ -8,12 +8,18 @@ import com.YaNan.frame.ant.service.AntRuntimeService;
 import com.YaNan.frame.plugin.annotations.Service;
 
 /**
- * 服务中心功能
+ * 服务中心接口
  * @author yanan
  *
  */
 @Service //表明需要被代理
 public interface AntDiscoveryService {
+	/**
+	 * 下载服务
+	 * @param name 服务名
+	 * @return
+	 */
+	AntProviderSummary getService(String name) throws Exception;
 	/**
 	 * 下载服务
 	 * @param name 服务名

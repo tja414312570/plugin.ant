@@ -13,7 +13,7 @@ public class AntContextConfigure {
 	/**
 	 * 端口
 	 */
-	private int port;
+	private String port;
 	/**
 	 * 地址
 	 */
@@ -64,6 +64,8 @@ public class AntContextConfigure {
 	 * 最大任务队列
 	 */
 	private int taskSize = Integer.MAX_VALUE;
+	
+	private int retryInterval = 1000;
 	public String getName() {
 		return name;
 	}
@@ -72,11 +74,11 @@ public class AntContextConfigure {
 		this.name = name;
 	}
 
-	public int getPort() {
+	public String getPort() {
 		return port;
 	}
 
-	public void setPort(int port) {
+	public void setPort(String port) {
 		this.port = port;
 	}
 
@@ -175,5 +177,13 @@ public class AntContextConfigure {
 
 	public void setTaskSize(int taskSize) {
 		this.taskSize = taskSize;
+	}
+
+	public int getRetryInterval() {
+		return retryInterval;
+	}
+
+	public void setRetryInterval(int retryInterval) {
+		this.retryInterval = retryInterval;
 	}
 }

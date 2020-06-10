@@ -103,7 +103,7 @@ public class AntRegisterService {
 			handler = iterator.next();
 				try {
 					//完成连接
-					handler.getClientHandler().getRuntimeService().executeProcess(handler);
+					runtimeService.executeProcess(handler);
 					//加入到注册检测集合
 					waitRegisterList.add(handler);
 					//重置注册时间

@@ -45,6 +45,8 @@ public class ObjectLock {
 		}
 	}
 	public void release() {
+		if(atomicLock.get() == false)
+			return;
 		long now = System.currentTimeMillis();
 		while(!atomicLock.compareAndSet(true, false)) {
 			if((System.currentTimeMillis() - now ) / 1000 > timeout)
