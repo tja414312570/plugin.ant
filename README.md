@@ -22,6 +22,10 @@
 
 #20200608
 * 基于nacos的服务中心
+# 20200615
+* 新增AbstractProcess池化逻辑，对AntChanelProcess和MessageProcess进行池化管理，极大程度的减少gc
+* 对多任务处理细节的优化，如池化处理，抽象任务等
+
 服务端
 ```xml
 Ant:{ 
