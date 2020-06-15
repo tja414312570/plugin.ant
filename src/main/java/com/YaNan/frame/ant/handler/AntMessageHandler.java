@@ -435,7 +435,7 @@ public class AntMessageHandler {
 			if (invokeInfoLen > Short.MAX_VALUE << 2) {
 				throw new AntMessageSerialException("message info overflow,desc:" + message, message);
 			}
-			invokeInfoLen = invokeInfoLen - Short.MAX_VALUE;
+			invokeInfoLen = invokeInfoLen & Short.MAX_VALUE;
 		}
 		//消息体:体数量+体长度+体内容
 		byte[] invokeParameter = null;

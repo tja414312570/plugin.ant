@@ -14,6 +14,10 @@ public class AntChannelProcess extends AbstractProcess {
 	private AntClientHandler handler;
 	private SelectionKey key;
 	private int ops;
+	public void setKey(SelectionKey key) {
+		this.key = key;
+	}
+
 	private static Logger logger = LoggerFactory.getLogger(AntChannelProcess.class);
 
 	public AntChannelProcess(AntClientHandler handler, int ops, SelectionKey key) {

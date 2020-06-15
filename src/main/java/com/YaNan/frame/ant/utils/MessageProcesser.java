@@ -7,6 +7,7 @@ import com.YaNan.frame.ant.exception.AntInvoketionException;
 import com.YaNan.frame.ant.exception.AntRequestException;
 import com.YaNan.frame.ant.exception.AntResponseException;
 import com.YaNan.frame.ant.handler.AntClientHandler;
+import com.YaNan.frame.ant.implement.ProcessProvider;
 import com.YaNan.frame.ant.model.AntMessagePrototype;
 import com.YaNan.frame.ant.model.AntResponse;
 import com.YaNan.frame.ant.proxy.AntInvokeProxy;
@@ -23,28 +24,44 @@ public class MessageProcesser extends AbstractProcess{
 	 * 处理的消息
 	 */
 	private AntMessagePrototype message;
+
 	/**
 	 * 处理所对应连接处理器
 	 */
 	private AntClientHandler clientHandler;
-	public MessageProcesser(AntMessagePrototype message, AntClientHandler clientHandler) {
+	public MessageProcesser() {
+	}
+	public AntMessagePrototype getMessage() {
+		return message;
+	}
+	public void setMessage(AntMessagePrototype message) {
 		this.message = message;
+	}
+	public AntClientHandler getClientHandler() {
+		return clientHandler;
+	}
+	public void setClientHandler(AntClientHandler clientHandler) {
 		this.clientHandler = clientHandler;
 	}
 	@Override
 	public void execute() {
-		int type = message.getType();
-		switch (type) {
-		case MessageType.REQUEST:
-			doRequest();
-			break;
-		case MessageType.RESPONSE:
-			doResponse();
-			break;
-		case MessageType.EXCEPTION:
-			doException();
-			break;
+		try {
+			int type = message.getType();
+			switch (type) {
+			case MessageType.REQUEST:
+				doRequest();
+				break;
+			case MessageType.RESPONSE:
+				doResponse();
+				break;
+			case MessageType.EXCEPTION:
+				doException();
+				break;
+			}
+		}finally {
+			ProcessProvider.release(this);
 		}
+		
 	}
 
 //	public void throwException(RPCException rpcException) throws ServiceClosed, ServiceNotFound, ServiceNotResponse, UnKnowException, InvoketionException{
