@@ -4,6 +4,7 @@ package com.YaNan.frame.ant.handler;
 import java.io.IOException;
 import java.io.WriteAbortedException;
 import java.net.SocketAddress;
+import java.net.SocketException;
 import java.nio.ByteBuffer;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.SocketChannel;
@@ -19,6 +20,7 @@ import com.YaNan.frame.ant.abstracts.AbstractProcess;
 import com.YaNan.frame.ant.exception.AntInitException;
 import com.YaNan.frame.ant.exception.AntMessageResolveException;
 import com.YaNan.frame.ant.exception.AntRuntimeException;
+import com.YaNan.frame.ant.implement.ProcessProvider;
 import com.YaNan.frame.ant.interfaces.BufferReady;
 import com.YaNan.frame.ant.model.AntMessagePrototype;
 import com.YaNan.frame.ant.model.AntProviderSummary;
@@ -215,13 +217,20 @@ public class AntClientHandler {
 		clientHandleLocal.set(this);
 		executeThread = Thread.currentThread();
 		try {
-			while (socketChannel.read(messageHandler.getReadBuffer()) > 0) {
-				messageHandler.handleRead();
+			while (true) {
+				int len = socketChannel.read(messageHandler.getReadBuffer());
+				if(len > 0) 
+					messageHandler.handleRead();
+				if(len == 0)
+					break;
+				if(len == -1) {
+					throw new SocketException("the socket channel is close!");
+				}
 			}
 			AntMessagePrototype message;
 			while((message = messageHandler.getMessage())!=null) {
 				logger.debug("accept message from '"+this.getRemoteAddress()+"':\":"+message);
-				runtimeService.execute(new MessageProcesser(message, this));
+				runtimeService.execute(ProcessProvider.get(message, this));
 			}
 		} catch (AntMessageResolveException amre) {
 			logger.error("failed to read buffer",amre);
@@ -229,6 +238,7 @@ public class AntClientHandler {
 				AntMessagePrototype amp = new AntMessagePrototype();
 				amp.setType(MessageType.EXCEPTION);
 				amp.setRID(amre.getRID());
+				amp.setTimeout(runtimeService.getContextConfigure().getTimeout());
 				amp.setInvokeClass(AntMessageResolveException.class);
 				amp.setInvokeParmeters(amre.getMessage());
 				this.write(amp);
