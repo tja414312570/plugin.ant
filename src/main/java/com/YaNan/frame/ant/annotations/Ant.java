@@ -4,6 +4,8 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
+
+import com.YaNan.frame.ant.type.MessageType;
 @Target(ElementType.TYPE )
 @Retention(RetentionPolicy.RUNTIME)
 public @interface Ant {
@@ -17,4 +19,9 @@ public @interface Ant {
 	 * @return
 	 */
 	int timeout() default 30*1000;
+	/**
+	 * 
+	 * @return
+	 */
+	int type() default MessageType.REQUEST;
 	}
