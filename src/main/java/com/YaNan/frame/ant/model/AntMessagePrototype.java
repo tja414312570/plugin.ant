@@ -46,7 +46,13 @@ public class AntMessagePrototype{
 	 * 信息头长度
 	 */
 	protected int invokeHeaderLen;
-	
+	/**
+	 * 消息超时
+	 */
+	private int timeout;
+	/**
+	 * 消息是否已经解析
+	 */
 	private boolean decode = false;
 	private AntClientHandler clientHandler;
 	public int getInvokeHeaderLen() {
@@ -191,5 +197,11 @@ public class AntMessagePrototype{
 	}
 	public void setClientHandler(AntClientHandler clientHandler) {
 		this.clientHandler = clientHandler;
+	}
+	public int getTimeout() {
+		return timeout;
+	}
+	public void setTimeout(int timeout) {
+		this.timeout = timeout;
 	}
 }

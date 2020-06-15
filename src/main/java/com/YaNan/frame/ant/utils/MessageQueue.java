@@ -11,6 +11,7 @@ import com.YaNan.frame.ant.exception.AntResponseException;
 import com.YaNan.frame.ant.exception.AntRuntimeException;
 import com.YaNan.frame.ant.model.AntMessagePrototype;
 import com.YaNan.frame.ant.service.AntRuntimeService;
+import com.YaNan.frame.ant.type.MessageType;
 
 public class MessageQueue {
 	/**
@@ -19,16 +20,13 @@ public class MessageQueue {
 	private ConcurrentHashMap<Integer,AntMessageLock> lockQueue = new ConcurrentHashMap<Integer,AntMessageLock>();
 	private ConcurrentLinkedQueue<AntMessageLock> lockList = new ConcurrentLinkedQueue<AntMessageLock>();
 	private LockTimeoutService lockTimeoutChecker = new LockTimeoutService();
-	private long timeout = 1000;
 	private AntRuntimeService antRuntimeService;
 	public MessageQueue(AntRuntimeService antRuntimeService) {
 		super();
 		this.antRuntimeService = antRuntimeService;
-		this.timeout = antRuntimeService.getContextConfigure().getTimeout();
 	}
 	public MessageQueue(long timeout) {
 		super();
-		this.timeout = timeout;
 	}
 	
 	/**
@@ -43,9 +41,10 @@ public class MessageQueue {
 				AntMessageLock lock;
 				while(!lockList.isEmpty()){
 					lock =lockList.peek();
-					if(lock !=null && System.currentTimeMillis()- lock.getTimes() > timeout) {
+					if(lock !=null && System.currentTimeMillis()- lock.getTimes() > lock.getMessage().getTimeout()) {
 						lockList.poll();
-						notifyException(lock.getMessage().getRID(),new AntRequestTimeoutException("rpc request timeout at requestID "+lock.getMessage().getRID()+" when request service "));	
+						notifyException(lock.getMessage().getRID(),new AntRequestTimeoutException("rpc request timeout ["+lock.getMessage().getTimeout()+"] at requestID "+lock.getMessage().getRID()+" when request service ["+
+						lock.getMessage().getService()+"]"));	
 					}else {
 						break;
 					}
@@ -74,7 +73,7 @@ public class MessageQueue {
 	 * @param msg
 	 */
 	public void addRequest(AntMessagePrototype msg) {
-		if(msg==null)
+		if(msg==null || msg.getType() != MessageType.REQUEST)
 			return;
 		AntMessageLock lock = AntMessageLock.getLock(msg);
 		lockList.add(lock);
@@ -148,12 +147,6 @@ public class MessageQueue {
 			lock.setResult(message.getInvokeParmeters().length>0?message.getInvokeParmeters()[0]:null);
 		}
 		lock.unLock();
-	}
-	public long getTimeout() {
-		return timeout;
-	}
-	public void setTimeout(long timeout) {
-		this.timeout = timeout;
 	}
 	public AntRuntimeService getAntRuntimeService() {
 		return antRuntimeService;

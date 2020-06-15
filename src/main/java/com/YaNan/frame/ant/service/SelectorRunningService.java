@@ -12,6 +12,7 @@ import org.slf4j.LoggerFactory;
 
 import com.YaNan.frame.ant.handler.AntClientHandler;
 import com.YaNan.frame.ant.implement.AntChannelProcess;
+import com.YaNan.frame.ant.implement.ProcessProvider;
 import com.YaNan.frame.ant.model.AntProviderSummary;
 import com.YaNan.frame.ant.utils.ObjectLock;
 
@@ -80,10 +81,7 @@ public class SelectorRunningService implements Runnable{
 				                }
 				                //可读
 				                if(key.isReadable()) {
-				        			handler.handleRead(key);
-//				                	handler.handleRead(key);
-//				                	runtimeService.executeProcess(new AntChannelProcess(handler,SelectionKey.OP_READ,key));
-//				                	handler.handleRead(key);
+				                	runtimeService.executeProcess(ProcessProvider.requireChannerlProcess(handler,SelectionKey.OP_READ,key));
 				                }
 				                //可写
 				                if(key.isWritable()) {

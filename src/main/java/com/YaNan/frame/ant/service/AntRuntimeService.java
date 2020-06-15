@@ -46,7 +46,6 @@ import com.YaNan.frame.utils.resource.ResourceManager;
 
 public class AntRuntimeService {
 	private AntContext antContext;
-	private boolean daemon = true;
 	/**
 	 * 客户端注册服务
 	 */
@@ -171,12 +170,12 @@ public class AntRuntimeService {
 					//从服务中心下载服务并缓存到本地缓存
 					serviceList.forEach(serviceName -> {
 						try {
-							if(!serviceName.equals(getContextConfigure().getName()))
+							if(!serviceName.equals(getContextConfigure().getName())) {
 								addServiceFromDiscoveryService(serviceName);
+							}
 						}catch(Throwable t) {
 							logger.error(t.getMessage(),t);
 						}
-						
 					});
 					logger.debug("ant proxy scanner process completed at "+(System.currentTimeMillis()-t1)/1000+" s");
 				}
@@ -260,6 +259,10 @@ public class AntRuntimeService {
 				return;
 			lock = ObjectLock.getLock(serviceName, this.getContextConfigure().getTimeout());
 			lock.tryLock();
+			if(serviceProviderMap.containsKey(serviceName)) {
+				lock.release();
+				return;
+			}
 			AntProviderSummary providerSummary = discoveryService.getService(serviceName);
 			logger.debug("get service for "+serviceName+" info "+providerSummary);
 			Assert.isNull(providerSummary,"could not found ant provider server :"+serviceName);
@@ -277,7 +280,7 @@ public class AntRuntimeService {
 		PackageScanner packageScanner = new PackageScanner();
 		packageScanner.doScanner(cls -> {
 			Ant ant = cls.getAnnotation(Ant.class);
-			if(ant != null) {
+			if(ant != null && !result.contains(ant.value().trim())) {
 				result.add(ant.value().trim());
 			}
 		});
@@ -316,6 +319,7 @@ public class AntRuntimeService {
 	public Object request(AntClientHandler handler,AntMessagePrototype message,boolean lock) {
 		try {
 			message.setClientHandler(handler);
+			
 			if(handler==null || ! handler.getSocketChannel().finishConnect())
 				throw new ServiceNotRunningException(handler);
 			message.setRID(getRID());
@@ -403,12 +407,6 @@ public class AntRuntimeService {
 			throw new AntInitException(e);
 		}
 	}
-	public boolean isDaemon() {
-		return daemon;
-	}
-	public void setDaemon(boolean daemon) {
-		this.daemon = daemon;
-	}
 	/**
 	 * 获取链接 ID
 	 * @return
@@ -442,9 +440,8 @@ public class AntRuntimeService {
 		AntClientHandler antClientHandler = this.serviceProviderMap.get(name);
 		if(antClientHandler == null) {
 			addServiceFromDiscoveryService(name);
-			ObjectLock.getLock(name).tryLock();
+			antClientHandler = this.serviceProviderMap.get(name);
 		}
-		antClientHandler = this.serviceProviderMap.get(name);
 		if(antClientHandler == null) {
 			throw new AntRuntimeException("could not found ant service for \""+name+"\"");	
 		}
@@ -455,6 +452,7 @@ public class AntRuntimeService {
 		return handlerMapping.get(socketChannel);
 	}
 	public void addClientHandler(String name, AntClientHandler clientHandler) {
+		logger.debug("Ant instance ["+name+"] add success!");
 		this.serviceProviderMap.put(name, clientHandler);
 		ObjectLock lock = ObjectLock.getLock(name);
 		lock.release();

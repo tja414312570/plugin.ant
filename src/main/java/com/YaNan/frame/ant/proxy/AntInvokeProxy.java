@@ -26,6 +26,9 @@ public class AntInvokeProxy implements InvokeHandler {
 
 	private Logger logger = LoggerFactory.getLogger(AntInvokeProxy.class);
 	private AntRuntimeService runtimeService;
+	public AntRuntimeService getRuntimeService() {
+		return runtimeService;
+	}
 	public AntInvokeProxy(AntRuntimeService runtimeService) {
 		this.runtimeService = runtimeService;
 	}
@@ -49,6 +52,8 @@ public class AntInvokeProxy implements InvokeHandler {
 			request.setInvokeClass(clzz);
 			request.setInvokeParmeters(methodHandler.getParameters());
 			request.setInvokeMethod(methodHandler.getMethod());
+			request.setType(rpc.type());
+			request.setTimeout(rpc.timeout() < -1 ? runtimeService.getContextConfigure().getTimeout():rpc.timeout());
 			clientHandler = AntClientHandler.getHandler();
 			//如果没有预先设置
 			if(clientHandler == null) 
