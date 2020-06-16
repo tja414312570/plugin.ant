@@ -1,16 +1,14 @@
 package com.YaNan.frame.ant;
 
-import java.io.InputStream;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.YaNan.frame.ant.service.AntRuntimeService;
-import com.YaNan.frame.plugin.ConfigContext;
-import com.YaNan.frame.plugin.PlugsFactory;
-import com.YaNan.frame.plugin.PlugsFactory.STREAM_TYPT;
-import com.YaNan.frame.utils.config.ConfigHelper;
-import com.typesafe.config.Config;
+import com.YaNan.frame.utils.StringUtil;
+import com.YaNan.frame.utils.asserts.Assert;
 
 /**
  * 服务中心上下文
@@ -27,47 +25,28 @@ public class AntContext {
 	public AntContext(AntContextConfigure contextConfigure) {
 		this.contextConfigure = contextConfigure;
 	}
-	/**
-	 * 初始化上下文
-	 * @param is
-	 */
-	public void init(InputStream is) {
-		PlugsFactory.getInstance().addPlugs(is, STREAM_TYPT.CONF, null);
-		checkContextConfig();
-		Config config = ConfigContext.getInstance().getGlobalConfig().getConfig("Ant");
-		if(config!=null) {
-			contextConfigure = ConfigHelper.decode(config, AntContextConfigure.class);
-		}
-		this.init();
-	}
-	/**
-	 * 初始化上下文
-	 */
-	public void init() {
-		checkContextConfig();
+	public void setContextConfigure(AntContextConfigure contextConfigure) {
+		this.contextConfigure = contextConfigure;
 	}
 	/**
 	 * 初始化，传入端口号
 	 * @param port
 	 */
 	public void start() {
+		Assert.isNull(this.contextConfigure,"ant configure is null!");
+		if(StringUtil.isEmpty(this.contextConfigure.getHost())) {
+			logger.debug("ant host is empty,try to get host!");
+			try {
+				this.contextConfigure.setHost(InetAddress.getLocalHost().getHostAddress());
+				logger.debug("get service host : " + this.contextConfigure.getHost());
+			} catch (UnknownHostException e) {
+				e.printStackTrace();
+			}
+		}
 		logger.debug("start ant with "+this.contextConfigure);
 		//从nacos注册服务
 		this.setAntRuntimeService(new AntRuntimeService(this));
 		this.antRuntimeService.start();
-		//获取
-//		AntRuntimeService.getAntRuntimeService().start();
-	}
-	/**
-	 * 检查配置
-	 */
-	private void checkContextConfig() {
-		if(contextConfigure == null)
-			synchronized (this) {
-				if(contextConfigure == null) {
-					contextConfigure = new AntContextConfigure();
-				}
-			}
 	}
 	public AntContextConfigure getContextConfigure() {
 		return contextConfigure;

@@ -28,7 +28,6 @@ import com.YaNan.frame.ant.service.AntRuntimeService;
 import com.YaNan.frame.ant.type.BufferType;
 import com.YaNan.frame.ant.type.ClientType;
 import com.YaNan.frame.ant.type.MessageType;
-import com.YaNan.frame.ant.utils.MessageProcesser;
 import com.YaNan.frame.ant.utils.ObjectLock;
 
 /**
@@ -229,7 +228,7 @@ public class AntClientHandler {
 			}
 			AntMessagePrototype message;
 			while((message = messageHandler.getMessage())!=null) {
-				logger.debug("accept message from '"+this.getRemoteAddress()+"':\":"+message);
+//				logger.debug("accept message from '"+this.getRemoteAddress()+"':\":"+message);
 				runtimeService.execute(ProcessProvider.get(message, this));
 			}
 		} catch (AntMessageResolveException amre) {
@@ -277,7 +276,7 @@ public class AntClientHandler {
 	}
 	public void write(AntMessagePrototype message) {
 		tryAcquire();
-		logger.debug("write message to '"+this.getRemoteAddress()+"':"+message);
+//		logger.debug("write message to '"+this.getRemoteAddress()+"':"+message);
 		this.messageHandler.write(message,this.messageWriteHandler);
 	}
 	/**

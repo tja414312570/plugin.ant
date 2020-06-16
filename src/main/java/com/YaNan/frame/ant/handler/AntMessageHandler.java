@@ -31,6 +31,7 @@ import sun.misc.Cleaner;
  * @author yanan
  *
  */
+@SuppressWarnings("restriction")
 public class AntMessageHandler {
 	/**
 	 * 读取消息解析工具

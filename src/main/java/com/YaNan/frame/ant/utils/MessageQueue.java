@@ -43,7 +43,7 @@ public class MessageQueue {
 					lock =lockList.peek();
 					if(lock !=null && System.currentTimeMillis()- lock.getTimes() > lock.getMessage().getTimeout()) {
 						lockList.poll();
-						notifyException(lock.getMessage().getRID(),new AntRequestTimeoutException("rpc request timeout ["+lock.getMessage().getTimeout()+"] at requestID "+lock.getMessage().getRID()+" when request service ["+
+						notifyException(lock.getMessage().getRID(),new AntRequestTimeoutException("rpc request timeout ["+lock.getMessage().getTimeout()+"ms] at requestID "+lock.getMessage().getRID()+" when request service ["+
 						lock.getMessage().getService()+"]"));	
 					}else {
 						break;
