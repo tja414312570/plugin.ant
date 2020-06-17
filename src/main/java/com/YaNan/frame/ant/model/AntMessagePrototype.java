@@ -184,7 +184,7 @@ public class AntMessagePrototype{
 	@Override
 	public String toString() {
 		return "AntMessagePrototype [service=" + service + ", RID=" + RID + ", type=" + type + ", invokeClass="
-				+ invokeClass + ", invokeMethod=" + invokeMethod + ", invokeParmeters=" + invokeParmeters
+				+ invokeClass + ", invokeMethod=" + invokeMethod + ", invokeParmeters=" + Arrays.toString(invokeParmeters)
 				+  ", invokeHeaderLen=" + invokeHeaderLen + ", decode="
 				+ decode + ", buffered=" + Arrays.toString(buffered) +"]";
 	}

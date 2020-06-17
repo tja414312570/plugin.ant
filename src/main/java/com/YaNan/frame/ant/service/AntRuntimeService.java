@@ -240,7 +240,6 @@ public class AntRuntimeService {
 				lock.release();
 				return;
 			}
-			new RuntimeException().printStackTrace();
 			AntProviderSummary providerSummary = discoveryService.getService(serviceName);
 			logger.debug("get service for "+serviceName+" info "+providerSummary);
 			Assert.isNull(providerSummary,"could not found ant provider server :"+serviceName);
@@ -284,7 +283,6 @@ public class AntRuntimeService {
 	public Object request(AntServiceInstance handler,AntMessagePrototype message,boolean lock) {
 		try {
 			message.setClientHandler(handler);
-			
 			if(handler==null)
 				throw new ServiceNotRunningException(handler);
 			message.setRID(getRID());

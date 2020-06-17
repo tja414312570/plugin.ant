@@ -14,7 +14,10 @@ public interface ClientService {
 	 * @throws IOException 
 	 */
 	void clientService(AntProviderSummary providerSummary) throws IOException;
-
+	/**
+	 * 获取运行时服务
+	 * @return
+	 */
 	AntRuntimeService getRuntimeService();
 	/**
 	 * 开启服务提供

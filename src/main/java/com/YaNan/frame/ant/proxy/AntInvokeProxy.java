@@ -54,10 +54,7 @@ public class AntInvokeProxy implements InvokeHandler {
 			request.setInvokeMethod(methodHandler.getMethod());
 			request.setType(rpc.type());
 			request.setTimeout(rpc.timeout() < -1 ? runtimeService.getContextConfigure().getTimeout():rpc.timeout());
-			clientHandler = AntServiceInstance.getServiceInstance();
-			//如果没有预先设置
-			if(clientHandler == null) 
-				clientHandler = runtimeService.getClientHandler(rpc.value());
+			clientHandler = runtimeService.getClientHandler(rpc.value());
 			if(clientHandler == null)
 				throw new AntRequestException("could not found client handler for '"+rpc.value()+"'");
 			Object object = runtimeService.request(clientHandler,request, lock != null);
