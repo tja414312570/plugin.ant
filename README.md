@@ -25,7 +25,10 @@
 # 20200615
 * 新增AbstractProcess池化逻辑，对AntChanelProcess和MessageProcess进行池化管理，极大程度的减少gc
 * 对多任务处理细节的优化，如池化处理，抽象任务等
-
+# 20200617
+* 将连接层抽象出来，将Ant协议的连接实现作为一个默认连接层实现，可以扩展更多连接协议
+* Discovery ==> AntRuntimeService ==> ClientService ==> ClientInstance ==> AntServiceInstance
+* 服务调用流程：service invoke ==> AntInvokeProxy ==> AntRuntimeService ==> DiscoveryService ==> ClientService ==> ClientInstance ==> AntServiceInstance ==> ClientInstance ==> transport message ==> AntRuntimeService ==> AntInvokeProxy ==> return result
 服务端
 ```xml
 Ant:{ 
