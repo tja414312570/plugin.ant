@@ -27,6 +27,7 @@
 * 对多任务处理细节的优化，如池化处理，抽象任务等
 # 20200617
 * 将连接层抽象出来，将Ant协议的连接实现作为一个默认连接层实现，可以扩展更多连接协议
+* ant协议中，将Selector中的SelectionKeySet依照netty的SelectionKeySet的优化方式，以提高Selector的执行效率
 * Discovery ==> AntRuntimeService ==> ClientService ==> ClientInstance ==> AntServiceInstance
 * 服务调用流程：service invoke ==> AntInvokeProxy ==> AntRuntimeService ==> DiscoveryService ==> ClientService ==> ClientInstance ==> AntServiceInstance ==> ClientInstance ==> transport message ==> AntRuntimeService ==> AntInvokeProxy ==> return result
 服务端
