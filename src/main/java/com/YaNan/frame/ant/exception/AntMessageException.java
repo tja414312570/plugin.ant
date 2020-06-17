@@ -1,27 +1,27 @@
 package com.YaNan.frame.ant.exception;
 
-import com.YaNan.frame.ant.handler.AntClientHandler;
+import com.YaNan.frame.ant.handler.AntServiceInstance;
 import com.YaNan.frame.ant.model.AntMessagePrototype;
 
 public class AntMessageException extends RuntimeException{
 	private AntMessagePrototype antMessage;
-	private AntClientHandler handler;
-	public AntMessageException(AntMessagePrototype antMessage, AntClientHandler handler) {
+	private AntServiceInstance handler;
+	public AntMessageException(AntMessagePrototype antMessage, AntServiceInstance handler) {
 		super();
 		this.antMessage = antMessage;
 		this.handler = handler;
 	}
-	public AntMessageException(String msg,AntMessagePrototype antMessage, AntClientHandler handler) {
+	public AntMessageException(String msg,AntMessagePrototype antMessage, AntServiceInstance handler) {
 		super(msg);
 		this.antMessage = antMessage;
 		this.handler = handler;
 	}
-	public AntMessageException(String msg,Throwable e,AntMessagePrototype antMessage, AntClientHandler handler) {
+	public AntMessageException(String msg,Throwable e,AntMessagePrototype antMessage, AntServiceInstance handler) {
 		super(msg,e);
 		this.antMessage = antMessage;
 		this.handler = handler;
 	}
-	public AntMessageException(Throwable e,AntMessagePrototype antMessage, AntClientHandler handler) {
+	public AntMessageException(Throwable e,AntMessagePrototype antMessage, AntServiceInstance handler) {
 		super(e);
 		this.antMessage = antMessage;
 		this.handler = handler;
@@ -32,7 +32,7 @@ public class AntMessageException extends RuntimeException{
 	public AntMessagePrototype getAntMessage() {
 		return antMessage;
 	}
-	public AntClientHandler getHandler() {
+	public AntServiceInstance getHandler() {
 		return handler;
 	}
 	private static final long serialVersionUID = -661004667125457130L;

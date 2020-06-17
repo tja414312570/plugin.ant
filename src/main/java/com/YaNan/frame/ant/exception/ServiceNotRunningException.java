@@ -1,10 +1,10 @@
 package com.YaNan.frame.ant.exception;
 
-import com.YaNan.frame.ant.handler.AntClientHandler;
+import com.YaNan.frame.ant.handler.AntServiceInstance;
 
 public class ServiceNotRunningException extends RuntimeException {
 
-	private AntClientHandler clientHandler;
+	private AntServiceInstance clientHandler;
 
 	public ServiceNotRunningException(Throwable e) {
 		super(e);
@@ -13,21 +13,21 @@ public class ServiceNotRunningException extends RuntimeException {
 	public ServiceNotRunningException() {
 	}
 
-	public ServiceNotRunningException(Throwable e, AntClientHandler handler) {
+	public ServiceNotRunningException(Throwable e, AntServiceInstance handler) {
 		super(e);
 		this.setClientHandler(handler);
 	}
 
-	public ServiceNotRunningException(AntClientHandler handler) {
-		super(handler == null?"invoke handler is null":"failed to invoke ant client "+handler.getRemoteAddress());
+	public ServiceNotRunningException(AntServiceInstance handler) {
+		super(handler == null?"invoke handler is null":"failed to invoke ant client "+handler.getClientInstance().getRemoteAddress());
 		this.setClientHandler(handler);
 	}
 
-	public AntClientHandler getClientHandler() {
+	public AntServiceInstance getClientHandler() {
 		return clientHandler;
 	}
 
-	public void setClientHandler(AntClientHandler clientHandler) {
+	public void setClientHandler(AntServiceInstance clientHandler) {
 		this.clientHandler = clientHandler;
 	}
 

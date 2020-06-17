@@ -6,7 +6,7 @@ import org.slf4j.LoggerFactory;
 import com.YaNan.frame.ant.annotations.Ant;
 import com.YaNan.frame.ant.annotations.AntLock;
 import com.YaNan.frame.ant.exception.AntRequestException;
-import com.YaNan.frame.ant.handler.AntClientHandler;
+import com.YaNan.frame.ant.handler.AntServiceInstance;
 import com.YaNan.frame.ant.model.AntRequest;
 import com.YaNan.frame.ant.service.AntRuntimeService;
 import com.YaNan.frame.plugin.annotations.Register;
@@ -40,7 +40,7 @@ public class AntInvokeProxy implements InvokeHandler {
 		if (!methodHandler.getPlugsProxy().getProxyClass().equals(AntInvokeProxy.class))
 			return;
 		AntLock lock = null;
-		AntClientHandler clientHandler = null;
+		AntServiceInstance clientHandler = null;
 		try {
 			Class<?> clzz = methodHandler.getPlugsProxy().getInterfaceClass();
 			lock = clzz.getAnnotation(AntLock.class);
@@ -54,7 +54,7 @@ public class AntInvokeProxy implements InvokeHandler {
 			request.setInvokeMethod(methodHandler.getMethod());
 			request.setType(rpc.type());
 			request.setTimeout(rpc.timeout() < -1 ? runtimeService.getContextConfigure().getTimeout():rpc.timeout());
-			clientHandler = AntClientHandler.getHandler();
+			clientHandler = AntServiceInstance.getServiceInstance();
 			//如果没有预先设置
 			if(clientHandler == null) 
 				clientHandler = runtimeService.getClientHandler(rpc.value());
@@ -66,7 +66,7 @@ public class AntInvokeProxy implements InvokeHandler {
 			logger.error(e.getMessage(), e);
 			throw new RuntimeException(e);
 		} finally {
-			AntClientHandler.removeHandler();
+			AntServiceInstance.removeHandler();
 			if (lock != null && lock.auto()
 					&& clientHandler != null)
 				clientHandler.releaseWriteLock();

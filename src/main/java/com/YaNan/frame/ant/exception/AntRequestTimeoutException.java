@@ -1,6 +1,6 @@
 package com.YaNan.frame.ant.exception;
 
-import com.YaNan.frame.ant.handler.AntClientHandler;
+import com.YaNan.frame.ant.handler.AntServiceInstance;
 import com.YaNan.frame.ant.model.AntMessagePrototype;
 
 public class AntRequestTimeoutException extends AntMessageException {
@@ -9,7 +9,7 @@ public class AntRequestTimeoutException extends AntMessageException {
 		super(msg);
 	}
 	public AntRequestTimeoutException(String msg, AntMessagePrototype message) {
-		super(msg,message,AntClientHandler.getHandler());
+		super(msg,message,AntServiceInstance.getServiceInstance());
 	}
 	/**
 	 * 

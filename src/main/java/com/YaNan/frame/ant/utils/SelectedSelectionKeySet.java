@@ -3,6 +3,7 @@ package com.YaNan.frame.ant.utils;
 
 import java.nio.channels.SelectionKey;
 import java.util.AbstractSet;
+import java.util.Arrays;
 import java.util.Iterator;
 
 
@@ -71,7 +72,7 @@ final public class SelectedSelectionKeySet extends AbstractSet<SelectionKey> {
         keysB = newKeysB;
     }
 
-  public  SelectionKey[] flip() {
+  public SelectionKey[] flip() {
         if (isA) {
             isA = false;
             keysA[keysASize] = null;
@@ -106,6 +107,6 @@ final public class SelectedSelectionKeySet extends AbstractSet<SelectionKey> {
 
     @Override
     public Iterator<SelectionKey> iterator() {
-        throw new UnsupportedOperationException();
+       return Arrays.stream(flip()).iterator();
     }
 }

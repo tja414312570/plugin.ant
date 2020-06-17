@@ -1,4 +1,4 @@
-package com.YaNan.frame.ant.handler;
+package com.YaNan.frame.ant.protocol.ant.handler;
 
 import java.io.IOException;
 import java.io.WriteAbortedException;
@@ -9,14 +9,17 @@ import java.nio.channels.SocketChannel;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
+import com.YaNan.frame.ant.AntContextConfigure;
 import com.YaNan.frame.ant.exception.AntMessageResolveException;
 import com.YaNan.frame.ant.exception.AntMessageSerialException;
 import com.YaNan.frame.ant.exception.AntMessageWriteException;
+import com.YaNan.frame.ant.handler.AntMeessageSerialHandler;
 import com.YaNan.frame.ant.interfaces.AntMessageSerialization;
 import com.YaNan.frame.ant.interfaces.BufferReady;
 import com.YaNan.frame.ant.model.AntMessagePrototype;
+import com.YaNan.frame.ant.service.AntRuntimeService;
+import com.YaNan.frame.ant.type.BufferType;
 import com.YaNan.frame.plugin.PlugNotFound;
 import com.YaNan.frame.plugin.PlugsFactory;
 import com.YaNan.frame.utils.ByteUtils;
@@ -32,11 +35,7 @@ import sun.misc.Cleaner;
  *
  */
 @SuppressWarnings("restriction")
-public class AntMessageHandler {
-	/**
-	 * 读取消息解析工具
-	 */
-	private volatile static ConcurrentHashMap<AntClientHandler, AntMessageHandler> messageHandlerMap = new ConcurrentHashMap<AntClientHandler, AntMessageHandler>();
+public class AntMessageHandler{
 	/**
 	 * 用来存储缓存
 	 */
@@ -45,10 +44,6 @@ public class AntMessageHandler {
 	 * 读buffer
 	 */
 	private ByteBuffer readBuffer;
-	/**
-	 * 当前处理器的handler
-	 */
-	private AntClientHandler clientHandler;
 	/**
 	 * 写数据用的buffer
 	 */
@@ -85,16 +80,28 @@ public class AntMessageHandler {
 	 * 序列化工具
 	 */
 	private AntMessageSerialization serailzationHandler;
-	/**
-	 * 存储当前线程的连接绑定对象
-	 */
-	private static InheritableThreadLocal<AntMessageHandler> clientHandleLocal = new InheritableThreadLocal<AntMessageHandler>();
+	public AntMessageHandler(AntRuntimeService runtimeService) {
+		messageList = new LinkedList<AntMessagePrototype>();
+		AntContextConfigure config = runtimeService.getContextConfigure();
+		setMaxBufferSize(config.getBufferMaxSize());
+		if (config.getBufferType() == BufferType.DIRECT) {
+			setReadBuffer(ByteBuffer.allocateDirect(config.getBufferSize()));
+			setWriteBuffer(ByteBuffer.allocateDirect(config.getBufferSize()));
+		} else {
+			setReadBuffer(ByteBuffer.allocate(config.getBufferSize()));
+			setWriteBuffer(ByteBuffer.allocate(config.getBufferSize()));
+		}
+		try {
+			this.serailzationHandler = PlugsFactory.getPlugsInstance(AntMessageSerialization.class);
+		}catch(PlugNotFound e) {
+			PlugsFactory.getInstance().addPlugs(AntMeessageSerialHandler.class);
+			this.serailzationHandler = PlugsFactory.getPlugsInstance(AntMessageSerialization.class);
+		}
+	}
+
 	
 	public AntMessageSerialization getSerailzationHandler() {
 		return serailzationHandler;
-	}
-	public static AntMessageHandler getHandler() {
-		return clientHandleLocal.get();
 	}
 	public void setSerailzationHandler(AntMessageSerialization serailzationHandler) {
 		this.serailzationHandler = serailzationHandler;
@@ -104,18 +111,6 @@ public class AntMessageHandler {
 	}
 	public void setOutflowPackageLen(int outflowPackageLen) {
 		this.outflowPackageLen = outflowPackageLen;
-	}
-	private AntMessageHandler(AntClientHandler clientHandler) {
-		clientHandleLocal.set(this);
-		this.clientHandler = clientHandler;
-		messageList = new LinkedList<AntMessagePrototype>();
-		try {
-			this.serailzationHandler = PlugsFactory.getPlugsInstance(AntMessageSerialization.class);
-		}catch(PlugNotFound e) {
-			PlugsFactory.getInstance().addPlugs(AntMeessageSerialHandler.class);
-			this.serailzationHandler = PlugsFactory.getPlugsInstance(AntMessageSerialization.class);
-		}
-		
 	}
 	public void setBuffer(ByteBuffer readBuffer,ByteBuffer writeBuffer) {
 		this.readBuffer = readBuffer;
@@ -130,33 +125,6 @@ public class AntMessageHandler {
 	public void setReadBuffer(ByteBuffer readBuffer) {
 		this.readBuffer = readBuffer;
 	}
-	public static HashMap<AntClientHandler, AntMessageHandler> getAllAntClientHandler() {
-		return new HashMap<AntClientHandler, AntMessageHandler>(messageHandlerMap);
-	}
-
-	/**
-	 * 获取当前线程包的实例
-	 * 
-	 * @return
-	 */
-	public static AntMessageHandler getHandler(AntClientHandler handler) {
-		if(handler == null)
-			return new AntMessageHandler(null);
-		AntMessageHandler messageHandler = messageHandlerMap.get(handler);
-		if (messageHandler == null) {
-			messageHandler = new AntMessageHandler(handler);
-			messageHandlerMap.put(handler, messageHandler);
-		}
-		return messageHandler;
-	}
-
-	/**
-	 * 销毁该线程对应的包
-	 */
-	public static void remove(AntClientHandler handler) {
-		messageHandlerMap.remove(handler);
-	}
-
 	/**
 	 * 获取包中的缓存类容
 	 * 
@@ -212,7 +180,6 @@ public class AntMessageHandler {
 	 * @throws IOException
 	 */
 	public synchronized void handleRead() throws AntMessageResolveException{
-		clientHandleLocal.set(this);
 		boolean compact = false;
 		// 从通道读取数据
 			try {
@@ -420,7 +387,6 @@ public class AntMessageHandler {
 	 * @param bufferedOverflow
 	 */
 	public synchronized void write(AntMessagePrototype message,BufferReady bufferedOverflow){
-		clientHandleLocal.set(this);
 		// 整个消息 占12 + serviceLen + invokeInfoLen + bodyLen > 12
 		byte[] infoHead = new byte[12];
 		// 服务名长度
@@ -579,9 +545,6 @@ public class AntMessageHandler {
 		byteBuffer.put(contents);
 	}
 
-	public AntClientHandler getClientHandler() {
-		return clientHandler;
-	}
 	public int getMaxBufferSize() {
 		return maxBufferSize;
 	}

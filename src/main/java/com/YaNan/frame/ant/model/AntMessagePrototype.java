@@ -4,8 +4,7 @@ import java.lang.reflect.Method;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
 
-import com.YaNan.frame.ant.handler.AntClientHandler;
-import com.YaNan.frame.ant.handler.AntMessageHandler;
+import com.YaNan.frame.ant.handler.AntServiceInstance;
 import com.YaNan.frame.ant.type.MessageType;
 import com.YaNan.frame.ant.utils.InvokeInfo;
 import com.YaNan.frame.ant.utils.InvokeInfoCache;
@@ -54,7 +53,7 @@ public class AntMessagePrototype{
 	 * 消息是否已经解析
 	 */
 	private boolean decode = false;
-	private AntClientHandler clientHandler;
+	private AntServiceInstance clientHandler;
 	public int getInvokeHeaderLen() {
 		return invokeHeaderLen;
 	}
@@ -163,7 +162,7 @@ public class AntMessagePrototype{
 						limit = position+paramLen;
 						if(position != limit) {
 							Class<?> t = i<type.length?type[i]:type[type.length-1];
-							this.invokeParmeters[i]  = AntMessageHandler.getHandler().getSerailzationHandler()
+							this.invokeParmeters[i]  = AntServiceInstance.getServiceInstance().getClientInstance().getSerailzationHandler()
 									.deserializationAntMessage(buffer,position, limit,t);
 						}
 						position = limit;
@@ -178,7 +177,7 @@ public class AntMessagePrototype{
 		if(this.buffered.length>0){
 			this.invokeParmeters = new String[1];
 			ByteBuffer buffer = ByteBuffer.wrap(this.buffered);
-			this.invokeParmeters[0] = AntMessageHandler.getHandler().getSerailzationHandler()
+			this.invokeParmeters[0] = AntServiceInstance.getServiceInstance().getClientInstance().getSerailzationHandler()
 			.deserializationAntMessage(buffer,5, this.buffered.length,decodeType);
 		}
 	}
@@ -192,10 +191,10 @@ public class AntMessagePrototype{
 	public void decodeException() {
 		this.decode(String.class);
 	}
-	public AntClientHandler getClientHandler() {
+	public AntServiceInstance getClientHandler() {
 		return clientHandler;
 	}
-	public void setClientHandler(AntClientHandler clientHandler) {
+	public void setClientHandler(AntServiceInstance clientHandler) {
 		this.clientHandler = clientHandler;
 	}
 	public int getTimeout() {

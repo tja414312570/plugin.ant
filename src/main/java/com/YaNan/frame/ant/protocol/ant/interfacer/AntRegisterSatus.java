@@ -1,4 +1,4 @@
-package com.YaNan.frame.ant.interfaces.provider;
+package com.YaNan.frame.ant.protocol.ant.interfacer;
 
 /**
  * Ant 服务中心注册结果

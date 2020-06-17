@@ -6,10 +6,10 @@ import com.YaNan.frame.ant.abstracts.AbstractProcess;
 import com.YaNan.frame.ant.exception.AntInvoketionException;
 import com.YaNan.frame.ant.exception.AntRequestException;
 import com.YaNan.frame.ant.exception.AntResponseException;
-import com.YaNan.frame.ant.handler.AntClientHandler;
-import com.YaNan.frame.ant.implement.ProcessProvider;
+import com.YaNan.frame.ant.handler.AntServiceInstance;
 import com.YaNan.frame.ant.model.AntMessagePrototype;
 import com.YaNan.frame.ant.model.AntResponse;
+import com.YaNan.frame.ant.protocol.ant.ProcessProvider;
 import com.YaNan.frame.ant.proxy.AntInvokeProxy;
 import com.YaNan.frame.ant.type.MessageType;
 import com.YaNan.frame.plugin.PlugsFactory;
@@ -28,7 +28,7 @@ public class MessageProcesser extends AbstractProcess{
 	/**
 	 * 处理所对应连接处理器
 	 */
-	private AntClientHandler clientHandler;
+	private AntServiceInstance clientHandler;
 	public MessageProcesser() {
 	}
 	public AntMessagePrototype getMessage() {
@@ -37,10 +37,10 @@ public class MessageProcesser extends AbstractProcess{
 	public void setMessage(AntMessagePrototype message) {
 		this.message = message;
 	}
-	public AntClientHandler getClientHandler() {
+	public AntServiceInstance getClientHandler() {
 		return clientHandler;
 	}
-	public void setClientHandler(AntClientHandler clientHandler) {
+	public void setClientHandler(AntServiceInstance clientHandler) {
 		this.clientHandler = clientHandler;
 	}
 	@Override

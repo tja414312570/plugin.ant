@@ -1,13 +1,13 @@
-package com.YaNan.frame.ant.service;
+package com.YaNan.frame.ant.protocol.ant;
 
 import java.util.Iterator;
 import java.util.LinkedList;
 
-import com.YaNan.frame.ant.handler.AntClientHandler;
+import com.YaNan.frame.ant.service.AntRuntimeService;
 
 public class AntClientRegisterService {
 //	private static AntClientRegisterService antClientRegisterService;
-	private LinkedList<AntClientHandler> waitRegisterList = new LinkedList<AntClientHandler>();
+	private LinkedList<AntClientInstance> waitRegisterList = new LinkedList<AntClientInstance>();
 	private Thread registerCheckThread;
 	private AntRegisterCheckService registerCheckService;
 	private AntRuntimeService runtimeService;
@@ -19,7 +19,7 @@ public class AntClientRegisterService {
 		registerCheckThread.setDaemon(true);
 		registerCheckThread.start();
 	}
-	public LinkedList<AntClientHandler> getWaitRegisterList() {
+	public LinkedList<AntClientInstance> getWaitRegisterList() {
 		return waitRegisterList;
 	}
 	
@@ -29,11 +29,11 @@ public class AntClientRegisterService {
 		//锁定列表
 		synchronized (waitRegisterList) {
 			//迭代
-			Iterator<AntClientHandler> iterator = waitRegisterList.iterator();
+			Iterator<AntClientInstance> iterator = waitRegisterList.iterator();
 			while(iterator.hasNext()) {
-				AntClientHandler handler = iterator.next();
+				AntClientInstance handler = iterator.next();
 				//注册时间判断
-				if(now - handler.getClientTime()>
+				if(now - handler.getServiceInstance().getClientTime()>
 				handler.getRuntimeService().getContextConfigure().getTimeout()) {
 					//如果超时，移除并通知handler
 					handler.registTimeout();
@@ -69,11 +69,11 @@ public class AntClientRegisterService {
 	}
 
 
-	public void register(AntClientHandler handler) {
+	public void register(AntClientInstance handler) {
 		if(!this.waitRegisterList.contains(handler))
 			this.waitRegisterList.add(handler);
 	}
-	public void registerSuccess(AntClientHandler handler) {
+	public void registerSuccess(AntClientInstance handler) {
 		this.waitRegisterList.remove(handler);
 	}
 }

@@ -1,13 +1,14 @@
-package com.YaNan.frame.ant.implement;
+package com.YaNan.frame.ant.protocol.ant;
 
 import java.nio.channels.SelectionKey;
+import java.nio.channels.SocketChannel;
 import java.util.Map;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 import com.YaNan.frame.ant.abstracts.AbstractProcess;
-import com.YaNan.frame.ant.handler.AntClientHandler;
+import com.YaNan.frame.ant.handler.AntServiceInstance;
 import com.YaNan.frame.ant.model.AntMessagePrototype;
 import com.YaNan.frame.ant.utils.MessageProcesser;
 
@@ -26,13 +27,14 @@ public class ProcessProvider {
 	 * @param key
 	 * @return
 	 */
-	public static AntChannelProcess requireChannerlProcess(AntClientHandler handler,int type,SelectionKey key) {
-		int hash = handler.hashCode()+type ;
+	public static AbstractProcess requireChannerlProcess(AntClientService clientService, SocketChannel socketChannel,
+			int type, SelectionKey key) {
+		int hash = socketChannel.hashCode()+type ;
 		AntChannelProcess channelProcess = (AntChannelProcess) processMap.get(hash);
 		if(channelProcess == null) {
-			synchronized (handler) {
+			synchronized (clientService) {
 				if(channelProcess == null) {
-					channelProcess =new AntChannelProcess(handler,type,key);
+					channelProcess =new AntChannelProcess(clientService,socketChannel,type,key);
 					processMap.put(hash, channelProcess);
 					return channelProcess;
 				}
@@ -47,7 +49,7 @@ public class ProcessProvider {
 	 * @param handler
 	 * @return
 	 */
-	public static MessageProcesser get(AntMessagePrototype message, AntClientHandler handler) {
+	public static MessageProcesser get(AntMessagePrototype message, AntServiceInstance handler) {
 		MessageProcesser messageProcesser = (MessageProcesser) processPools.poll();
 		if(messageProcesser == null) {
 			messageProcesser = new MessageProcesser();

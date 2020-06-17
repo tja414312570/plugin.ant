@@ -1,11 +1,12 @@
-package com.YaNan.frame.ant.service;
+package com.YaNan.frame.ant.protocol.ant;
 
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
-import com.YaNan.frame.ant.abstracts.AntAbstractRegisterHandler;
 import com.YaNan.frame.ant.exception.AntRegisterRuntimeException;
+import com.YaNan.frame.ant.protocol.ant.handler.AntAbstractRegisterHandler;
+import com.YaNan.frame.ant.service.AntRuntimeService;
 
 /**
  * Ant注册服务
@@ -107,17 +108,17 @@ public class AntRegisterService {
 					//加入到注册检测集合
 					waitRegisterList.add(handler);
 					//重置注册时间
-					handler.setRecoderTime(System.currentTimeMillis()+	handler.getClientHandler().getRuntimeService().getContextConfigure().getCheckTime());
+					handler.setRecoderTime(System.currentTimeMillis()+	handler.getClientInstance().getRuntimeService().getContextConfigure().getCheckTime());
 					iterator.remove();
 				} catch (Exception e) {
 					iterator.remove();
-					handler.getClientHandler().close(e);
+					handler.getClientInstance().close(e);
 				}
 				//注册时间判断
 				if(now - handler.getRecoderTime()>
-				handler.getClientHandler().getRuntimeService().getContextConfigure().getTimeout()) {
+				handler.getClientInstance().getRuntimeService().getContextConfigure().getTimeout()) {
 					//如果超时，移除并通知handler
-					handler.getClientHandler().connectTimeout();
+					handler.getClientInstance().connectTimeout();
 					iterator.remove();
 				}
 			}
@@ -130,9 +131,9 @@ public class AntRegisterService {
 				handler = iterator.next();
 				//注册时间判断
 				if(now - handler.getRecoderTime()>
-				handler.getClientHandler().getRuntimeService().getContextConfigure().getTimeout()) {
+				handler.getClientInstance().getRuntimeService().getContextConfigure().getTimeout()) {
 					//如果超时，移除并通知handler
-					handler.getClientHandler().registTimeout();
+					handler.getClientInstance().registTimeout();
 					iterator.remove();
 				}
 			}

@@ -1,4 +1,4 @@
-package com.YaNan.frame.ant.service;
+package com.YaNan.frame.ant.protocol.ant;
 
 import java.io.IOException;
 import java.lang.reflect.Field;
@@ -7,14 +7,11 @@ import java.nio.channels.Selector;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
 import java.util.Iterator;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.YaNan.frame.ant.handler.AntClientHandler;
-import com.YaNan.frame.ant.implement.AntChannelProcess;
-import com.YaNan.frame.ant.implement.ProcessProvider;
 import com.YaNan.frame.ant.model.AntProviderSummary;
+import com.YaNan.frame.ant.service.AntRuntimeService;
 import com.YaNan.frame.ant.utils.ObjectLock;
 import com.YaNan.frame.ant.utils.SelectedSelectionKeySet;
 
@@ -30,7 +27,7 @@ public class SelectorRunningService implements Runnable {
 	private Selector selector;
 	private boolean DISABLE_KEYSET_OPTIMIZATION;
 	private SelectedSelectionKeySet selectedKeySet;
-
+	private AntClientService clientService;
 	public Selector getSelector() {
 		return selector;
 	}
@@ -66,8 +63,9 @@ public class SelectorRunningService implements Runnable {
 		}
 	}
 
-	public SelectorRunningService(AntRuntimeService antRuntimeService) {
-		runtimeService = antRuntimeService;
+	public SelectorRunningService(AntClientService clientService) {
+		this.clientService = clientService;
+		this.runtimeService = clientService.getRuntimeService();
 		// 创建选择器
 		openSelector();
 	}
@@ -103,38 +101,26 @@ public class SelectorRunningService implements Runnable {
 
 	public void processKey(SelectionKey key) throws IOException {
 		SocketChannel socketChannel;
-		AntClientHandler handler;
 		try {
 			// 客户端连接到此设备
 			if (key.isAcceptable()) {
 				logger.debug("accept a service connection!");
 				socketChannel = ((ServerSocketChannel) key.channel()).accept();
 				logger.debug("service connection ip:" + socketChannel.getRemoteAddress());
-				socketChannel.configureBlocking(false);
-				socketChannel.register(key.selector(), SelectionKey.OP_READ);
-				handler = new AntClientHandler(socketChannel, runtimeService);
-				runtimeService.executeProcess(new AntChannelProcess(handler, SelectionKey.OP_ACCEPT, key));
-				runtimeService.getAntClientRegisterService().register(handler);
-				runtimeService.handlerMapping(socketChannel, handler);
+				runtimeService.executeProcess(new AntChannelProcess(clientService,socketChannel, SelectionKey.OP_ACCEPT, key));
 				return;
 			}
 			socketChannel = (SocketChannel) key.channel();
 			// 连接到目标
 			if (key.isConnectable()) {
 				logger.debug("connect to service success:" + socketChannel.getRemoteAddress());
-				handler = new AntClientHandler(socketChannel, runtimeService);
-				key.interestOps(SelectionKey.OP_READ | SelectionKey.OP_WRITE);
-				runtimeService.handlerMapping(socketChannel, handler);
-				runtimeService.executeProcess(new AntChannelProcess(handler, SelectionKey.OP_CONNECT, key));
-			}
-			handler = runtimeService.getHandler(socketChannel);
-			if (handler == null) {
-				socketChannel.close();
+				key.interestOps(SelectionKey.OP_READ);
+				runtimeService.executeProcess(new AntChannelProcess(clientService,socketChannel, SelectionKey.OP_CONNECT, key));
 			}
 			// 可读
 			if (key.isReadable()) {
 				runtimeService
-						.executeProcess(ProcessProvider.requireChannerlProcess(handler, SelectionKey.OP_READ, key));
+						.executeProcess(ProcessProvider.requireChannerlProcess(clientService,socketChannel, SelectionKey.OP_READ, key));
 			}
 			// 可写
 			if (key.isWritable()) {

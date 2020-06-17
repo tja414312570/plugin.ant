@@ -1,12 +1,12 @@
 package com.YaNan.frame.ant.exception;
 
-import com.YaNan.frame.ant.handler.AntClientHandler;
+import com.YaNan.frame.ant.handler.AntServiceInstance;
 
 public class AntRequestException extends RuntimeException {
 
-	private AntClientHandler handler;
+	private AntServiceInstance handler;
 
-	public AntRequestException(Throwable e, AntClientHandler handler) {
+	public AntRequestException(Throwable e, AntServiceInstance handler) {
 		super(e);
 		this.setHandler(handler);
 	}
@@ -15,11 +15,11 @@ public class AntRequestException extends RuntimeException {
 		super(msg);
 	}
 
-	public AntClientHandler getHandler() {
+	public AntServiceInstance getHandler() {
 		return handler;
 	}
 
-	public void setHandler(AntClientHandler handler) {
+	public void setHandler(AntServiceInstance handler) {
 		this.handler = handler;
 	}
 

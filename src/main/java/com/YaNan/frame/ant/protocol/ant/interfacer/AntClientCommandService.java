@@ -1,4 +1,4 @@
-package com.YaNan.frame.ant.interfaces.customer;
+package com.YaNan.frame.ant.protocol.ant.interfacer;
 
 import com.YaNan.frame.ant.model.AntCustomer;
 import com.YaNan.frame.ant.model.RegisterResult;
@@ -8,7 +8,7 @@ import com.YaNan.frame.ant.model.RegisterResult;
  * @author yanan
  *
  */
-public interface AntClientService {
+public interface AntClientCommandService {
 	/**
 	 * 注册服务
 	 * @param antContextConfigure
