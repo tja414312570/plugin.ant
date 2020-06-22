@@ -8,6 +8,7 @@
 * 高可用:只要节点还有一个实例存活系统就可以正常访问
 * 基于nacos的服务中心实现
 * 自动化端口配置
+![avatar](https://ufomedia.oss-cn-beijing.aliyuncs.com/ant.png)
 # ANT协议
  * 包头+包体
  * 包头 固定长度12byte，byte[0] 服务名长度，1位，byte[1 -4]请求号，4位，byte[5-6]消息头长度，2位，byte[7-10]消息体长度，4位，byte[11]消息类型,1位
