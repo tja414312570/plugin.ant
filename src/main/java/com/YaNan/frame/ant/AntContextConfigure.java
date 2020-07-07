@@ -1,11 +1,13 @@
 package com.YaNan.frame.ant;
 
 import java.io.File;
+import java.util.Arrays;
 
 import com.YaNan.frame.ant.handler.BufferTypeDecoder;
 import com.YaNan.frame.ant.type.BufferType;
 import com.YaNan.frame.utils.beans.xml.Element;
 import com.YaNan.frame.utils.config.Decoder;
+import com.YaNan.frame.utils.config.Name;
 import com.YaNan.frame.utils.config.Self;
 import com.typesafe.config.Config;
 @Element(name="wrapper")
@@ -64,6 +66,11 @@ public class AntContextConfigure {
 	 * 最大任务队列
 	 */
 	private int taskSize = Integer.MAX_VALUE;
+	/**
+	 * 扫描包的位置
+	 */
+	@Name("package")
+	private String[] packages;
 	
 	private int retryInterval = 1000;
 	public String getName() {
@@ -146,13 +153,13 @@ public class AntContextConfigure {
 	public void setProcess(int process) {
 		this.process = process;
 	}
-
 	@Override
 	public String toString() {
-		return "AntContextConfigure [port=" + port + ", host=" + host +  ", timeout=" + timeout
-				+ ", file=" + file + ", bufferType=" + bufferType + ", bufferSize=" + bufferSize + ", maxBufferSize="
-				+ bufferMaxSize + ", checkTime=" + checkTime + ", process=" + process + ", name=" + name
-				+", config=" + config + "]";
+		return "AntContextConfigure [port=" + port + ", host=" + host + ", config=" + config + ", timeout=" + timeout
+				+ ", file=" + file + ", bufferType=" + bufferType + ", bufferSize=" + bufferSize + ", bufferMaxSize="
+				+ bufferMaxSize + ", checkTime=" + checkTime + ", process=" + process + ", maxProcess=" + maxProcess
+				+ ", name=" + name + ", taskSize=" + taskSize + ", packages=" + Arrays.toString(packages)
+				+ ", retryInterval=" + retryInterval + "]";
 	}
 
 	public int getBufferMaxSize() {
@@ -185,5 +192,13 @@ public class AntContextConfigure {
 
 	public void setRetryInterval(int retryInterval) {
 		this.retryInterval = retryInterval;
+	}
+
+	public String[] getPackages() {
+		return packages;
+	}
+
+	public void setPackages(String[] packages) {
+		this.packages = packages;
 	}
 }

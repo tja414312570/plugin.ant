@@ -208,6 +208,8 @@ public class AntRuntimeService {
 				logger.error("try to recovery service "+antProviderSummary.getName()+" ["+i+"]");
 				AntProviderSummary providerSummary = discoveryService.getService(serviceName);
 				logger.debug("get service for "+serviceName+" info "+antProviderSummary);
+				
+				clientService.clientService(providerSummary);
 				Assert.isNull(providerSummary,()->
 					{
 						try {
@@ -217,7 +219,6 @@ public class AntRuntimeService {
 						}
 					}
 				);
-				clientService.clientService(providerSummary);
 			} catch (Throwable e) {
 				if(lock != null) {
 					lock.release();
@@ -356,7 +357,6 @@ public class AntRuntimeService {
 		if(antClientHandler == null) {
 			throw new AntRuntimeException("could not found ant service for \""+name+"\"");	
 		}
-		AntServiceInstance.setHandler(antClientHandler);
 		return antClientHandler;
 	}
 	public void addClientHandler(String name, AntServiceInstance clientHandler) {

@@ -1,9 +1,11 @@
 package com.YaNan.frame.utils.config;
 
 import com.typesafe.config.Config;
+import com.typesafe.config.ConfigValueType;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
+import java.text.ParseException;
 import java.util.Iterator;
 import java.util.Map.Entry;
 
@@ -68,11 +70,11 @@ public class ConfigHelper {
 					System.out.println(childConfig);
 				}
 			}
-			Iterator<Entry<String, Config>> configSetIterator = config.configEntrySet().iterator();
-			while(configSetIterator.hasNext()) {
-				Entry<String, Config> entry = configSetIterator.next();
-				System.out.println(entry.getKey()+"    "+entry.getValue());
-			}
+//			Iterator<Entry<String, Config>> configSetIterator = config.configEntrySet().iterator();
+//			while(configSetIterator.hasNext()) {
+//				Entry<String, Config> entry = configSetIterator.next();
+//				System.out.println(entry.getKey()+"    "+entry.getValue());
+//			}
 		return (T) loader.getLoadObject();
 	}
 
@@ -85,6 +87,38 @@ public class ConfigHelper {
 	}
 
 	private static Object getBaseType(String name, Class<?> type, Config config) {
+		if(type.isArray()) {
+			if(config.hasPath(name)) {
+				Class<?> baseType = ClassLoader.getArrayType(type);
+				if(config.isList(name)) {
+					if(baseType.equals(String.class)) {
+						return config.getStringList(name);
+					}
+					if(baseType.equals(int.class)) {
+						return config.getIntList(name);
+					}
+					if(baseType.equals(long.class)) {
+						return config.getLongList(name);
+					}
+					if(baseType.equals(boolean.class)) {
+						return config.getBooleanList(name);
+					}
+					if(baseType.equals(double.class)) {
+						return config.getDoubleList(name);
+					}
+				}else if (config.getType(name).equals(ConfigValueType.STRING)) {
+					String[] strValues = config.getString(name).split(",");
+					Object values;
+					try {
+						values = ClassLoader.parseBaseTypeArray(type, strValues, null);
+						return values;
+					} catch (ParseException e) {
+						e.printStackTrace();
+					}
+				} 
+			}
+			return null;
+		}
 		if(type.equals(String.class)) {
 			return config.getString(name);
 		}else if(type.equals(int.class)) {
@@ -95,7 +129,7 @@ public class ConfigHelper {
 			return (short)config.getInt(name);
 		}else if(type.equals(boolean.class)) {
 			return config.getBoolean(name);
-		}else if(type.equals(float.class)||type.equals(double.class)) {
+		}else if(type.equals(double.class)) {
 			return config.getDouble(name);
 		}
 		return null;

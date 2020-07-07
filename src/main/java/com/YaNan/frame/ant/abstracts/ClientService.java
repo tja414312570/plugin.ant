@@ -5,12 +5,13 @@ import java.io.IOException;
 import com.YaNan.frame.ant.model.AntProviderSummary;
 import com.YaNan.frame.ant.service.AntRuntimeService;
 
+/**
+ * 连接服务，提供RPC通信层支持
+ */
 public interface ClientService {
 	/**
 	 * 连接到目标服务器
 	 * @param providerSummary
-	 * @param host
-	 * @param port
 	 * @throws IOException 
 	 */
 	void clientService(AntProviderSummary providerSummary) throws IOException;

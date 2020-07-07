@@ -110,6 +110,11 @@ public class AntFactory {
 		antConfig.setProcess(propertiesWrapper.getInt("Ant.process", 1));
 		antConfig.setPort(propertiesWrapper.getProperty("Ant.server.port", "4281"));
 		antConfig.setTimeout(propertiesWrapper.getInt("Ant.timeout", 30000));
+		String packages = propertiesWrapper.getProperty("Ant.package");
+		if(packages == null) {
+			packages = "classpath:";
+		}
+		antConfig.setPackages(packages.split(","));
 		return new AntContext(antConfig);
 	}
 }

@@ -108,7 +108,7 @@ public class AntServiceInstance {
 	public static AntServiceInstance getServiceInstance() {
 		return clientHandleLocal.get();
 	}
-	public static AntServiceInstance setHandler(AntServiceInstance clientHandler) {
+	static AntServiceInstance setHandler(AntServiceInstance clientHandler) {
 		AntServiceInstance tempClientHandler = clientHandleLocal.get();
 		clientHandleLocal.set(clientHandler);
 		return tempClientHandler;

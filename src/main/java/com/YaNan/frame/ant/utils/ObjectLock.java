@@ -45,7 +45,7 @@ public class ObjectLock {
 		}
 	}
 	public void release() {
-		if(atomicLock.get() == false)
+		if(!atomicLock.get())
 			return;
 		long now = System.currentTimeMillis();
 		while(!atomicLock.compareAndSet(true, false)) {
@@ -54,6 +54,6 @@ public class ObjectLock {
 		}
 	}
 	public boolean isLock() {
-		return atomicLock.get() == true;
+		return atomicLock.get();
 	}
 }
