@@ -6,11 +6,9 @@ import com.typesafe.config.ConfigValueType;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.text.ParseException;
-import java.util.Iterator;
-import java.util.Map.Entry;
 
 import com.YaNan.frame.plugin.PlugsFactory;
-import com.YaNan.frame.utils.reflect.ClassLoader;
+import com.YaNan.frame.utils.reflect.AppClassLoader;
 import com.YaNan.frame.utils.reflect.cache.ClassHelper;
 
 public class ConfigHelper {
@@ -18,7 +16,7 @@ public class ConfigHelper {
 	public static <T> T decode(Config config,Class<T> type) {
 		if(config == null || type == null)
 			throw new IllegalArgumentException("config or type is null");
-		ClassLoader loader = new ClassLoader(type);
+		AppClassLoader loader = new AppClassLoader(type);
 			//遍历当前节点
 			ClassHelper classHelper = ClassHelper.getClassHelper(type);
 			//获取类所有Field
@@ -56,7 +54,7 @@ public class ConfigHelper {
 					continue;
 				}
 				//判断当前节点是否是一个基本对象
-				if(ClassLoader.isBaseType(field.getType())) {
+				if(AppClassLoader.isBaseType(field.getType())) {
 					object = getBaseType(name,field.getType(),config);
 					try {
 						loader.set(field, object);
@@ -89,7 +87,7 @@ public class ConfigHelper {
 	private static Object getBaseType(String name, Class<?> type, Config config) {
 		if(type.isArray()) {
 			if(config.hasPath(name)) {
-				Class<?> baseType = ClassLoader.getArrayType(type);
+				Class<?> baseType = AppClassLoader.getArrayType(type);
 				if(config.isList(name)) {
 					if(baseType.equals(String.class)) {
 						return config.getStringList(name);
@@ -110,7 +108,7 @@ public class ConfigHelper {
 					String[] strValues = config.getString(name).split(",");
 					Object values;
 					try {
-						values = ClassLoader.parseBaseTypeArray(type, strValues, null);
+						values = AppClassLoader.parseBaseTypeArray(type, strValues, null);
 						return values;
 					} catch (ParseException e) {
 						e.printStackTrace();
