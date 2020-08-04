@@ -6,8 +6,9 @@ import java.text.ParseException;
 
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigValueType;
-import com.yanan.frame.plugin.PlugsFactory;
+import com.yanan.framework.plugin.PlugsFactory;
 import com.yanan.utils.reflect.AppClassLoader;
+import com.yanan.utils.reflect.ParameterUtils;
 import com.yanan.utils.reflect.cache.ClassHelper;
 
 public class ConfigHelper {
@@ -53,7 +54,7 @@ public class ConfigHelper {
 					continue;
 				}
 				//判断当前节点是否是一个基本对象
-				if(AppClassLoader.isBaseType(field.getType())) {
+				if(ParameterUtils.isBaseType(field.getType())) {
 					object = getBaseType(name,field.getType(),config);
 					try {
 						loader.set(field, object);
@@ -86,7 +87,7 @@ public class ConfigHelper {
 	private static Object getBaseType(String name, Class<?> type, Config config) {
 		if(type.isArray()) {
 			if(config.hasPath(name)) {
-				Class<?> baseType = AppClassLoader.getArrayType(type);
+				Class<?> baseType = ParameterUtils.getArrayType(type);
 				if(config.isList(name)) {
 					if(baseType.equals(String.class)) {
 						return config.getStringList(name);
@@ -107,7 +108,7 @@ public class ConfigHelper {
 					String[] strValues = config.getString(name).split(",");
 					Object values;
 					try {
-						values = AppClassLoader.parseBaseTypeArray(type, strValues, null);
+						values = ParameterUtils.parseBaseTypeArray(type, strValues, null);
 						return values;
 					} catch (ParseException e) {
 						e.printStackTrace();
