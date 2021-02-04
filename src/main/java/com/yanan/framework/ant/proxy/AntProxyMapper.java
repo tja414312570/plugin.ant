@@ -62,9 +62,9 @@ public class AntProxyMapper {
 							plug = PluginDefinitionBuilderFactory.builderPluginDefinition(cls);
 						}
 						plug.addRegister(register);
+						PlugsFactory.getInstance().addPlugininDefinition(plug);
 						//需要为每个接口实现一个对应的jdk代理对象
-						Object proxy = PlugsFactory.getPluginsInstanceByInsClass(plug.getDefinition().getPlugClass(),
-								AntInvokeProxy.class,new Class<?>[]{AntRuntimeService.class},antRuntimeService);
+						Object proxy = PlugsFactory.getPluginsInstanceByInsClass(cls,AntInvokeProxy.class,new Class<?>[]{AntRuntimeService.class},antRuntimeService);
 						// 对接口方法进行代理，代理对象为本身，目的是为了拦截方法的执行
 						for (Method method : plug.getDefinition().getPlugClass().getMethods()) {
 							register.addMethodHandler(method, antInvokeProxy);

@@ -220,6 +220,7 @@ public class AntMessageHandler{
 //						System.out.println( "request package len (" + messageLen
 //								+ ") out of configure max buffer size (" + maxBufferSize + ")");
 //						break;
+						readBuffer = ensureCapacity(writeBuffer, messageLen);
 						throw new AntMessageResolveException("request package len (" + messageLen
 								+ ") out of configure max buffer size (" + maxBufferSize + ")", RID);
 					}
@@ -417,7 +418,14 @@ public class AntMessageHandler{
 				if(byteBuffer!=null) {
 					byteBuffer.flip();
 					len = byteBuffer.remaining();
-					serialBuffer.put(ByteUtils.intToByte(len));
+					byte[] lenBytes = ByteUtils.intToByte(len);
+					int lens = len+lenBytes.length+serialBuffer.position();
+					System.out.println("扩容前"+serialBuffer.remaining()+",对象:"+serialBuffer);
+					if(lens > serialBuffer.remaining())
+						serialBuffer = ensureCapacity(serialBuffer,lens);
+					serialBuffer.limit(serialBuffer.capacity());
+					System.out.println("可用:"+serialBuffer.remaining()+",扩容:"+lens+",对象:"+serialBuffer);
+					serialBuffer.put(lenBytes);
 					//写入参数内容
 					while(byteBuffer != null && byteBuffer.hasRemaining()) {
 						serialBuffer.put(byteBuffer.get());

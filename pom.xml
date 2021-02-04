@@ -4,7 +4,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.github.tja414312570</groupId>
 	<artifactId>plugin.ant.core</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
+	<version>0.0.1</version>
 	<name>plugin.ant.core</name>
 	<description>分布式服务</description>
 	<parent>
