@@ -4,9 +4,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.yanan.framework.ant.abstracts.ClientInstance;
 import com.yanan.framework.ant.exception.AntRuntimeException;
 import com.yanan.framework.ant.model.AntMessagePrototype;
@@ -28,7 +25,7 @@ public class AntServiceInstance {
 				+ ", runtimeService=" + runtimeService + ", clientType=" + clientType
 				+ ", startTime=" + new Date(clientTime) +"]";
 	}
-	private static Logger logger = LoggerFactory.getLogger(AntServiceInstance.class);
+//	private static Logger logger = LoggerFactory.getLogger(AntServiceInstance.class);
 	/**
 	 * 存储当前线程的连接绑定对象
 	 */
