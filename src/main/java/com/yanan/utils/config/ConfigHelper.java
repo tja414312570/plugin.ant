@@ -7,6 +7,7 @@ import java.text.ParseException;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigValueType;
 import com.yanan.framework.plugin.PlugsFactory;
+import com.yanan.utils.ArrayUtils;
 import com.yanan.utils.reflect.AppClassLoader;
 import com.yanan.utils.reflect.ParameterUtils;
 import com.yanan.utils.reflect.cache.ClassHelper;
@@ -87,7 +88,7 @@ public class ConfigHelper {
 	private static Object getBaseType(String name, Class<?> type, Config config) {
 		if(type.isArray()) {
 			if(config.hasPath(name)) {
-				Class<?> baseType = ParameterUtils.getArrayType(type);
+				Class<?> baseType = ArrayUtils.getArrayType(type);
 				if(config.isList(name)) {
 					if(baseType.equals(String.class)) {
 						return config.getStringList(name);
