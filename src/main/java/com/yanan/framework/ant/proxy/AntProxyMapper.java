@@ -42,7 +42,6 @@ public class AntProxyMapper {
 		if(antRuntimeService == null)
 			throw new AntInitException("not Ant Runtime Context for the ant mapper");
 		antInvokeProxy = PlugsFactory.getPluginsInstance(AntInvokeProxy.class, antRuntimeService);
-		System.out.println(antRuntimeService.getContextConfigure().getPackages());
 		// 从组件工厂获取所有的组件，就不必要重新扫描整个类了
 		RegisterDefinition register = PluginDefinitionBuilderFactory.builderRegisterDefinition(AntInvokeProxy.class);
 		// 创建一个此注册器的代理容器

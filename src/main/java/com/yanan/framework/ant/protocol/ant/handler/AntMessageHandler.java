@@ -205,13 +205,13 @@ public class AntMessageHandler{
 					// 获取服务名长度
 					int serviceLen = packageHeadBuffer[0] & 0xff;
 					// 获取消息头长度
-					int infoLen = ByteUtils.byteToUnsignedShort(packageHeadBuffer, 5);
+					int infoLen = ByteUtils.bytesToUnsignedShort(packageHeadBuffer, 5);
 					// 消息体长度
-					int bodyLen = ByteUtils.byteToInt(packageHeadBuffer, 7);
+					int bodyLen = ByteUtils.bytesToInt(packageHeadBuffer, 7);
 					// 总长度
 					int messageLen = serviceLen + infoLen + bodyLen;
 					// 获取请求号
-					int RID = ByteUtils.byteToInt(packageHeadBuffer, 1);
+					int RID = ByteUtils.bytesToInt(packageHeadBuffer, 1);
 					if (messageLen+PACKAGE_HEAD_LENGTH > this.maxBufferSize) {
 //						readBuffer.limit(0);
 						readBuffer.position(readBuffer.limit());
@@ -393,7 +393,7 @@ public class AntMessageHandler{
 		// 服务名长度
 		infoHead[0] = (byte) (message.getService() == null ? 0 : message.getService().getBytes().length);
 		// 请求号长度 4
-		System.arraycopy(ByteUtils.intToByte(message.getRID()), 0, infoHead, 1, 4);
+		System.arraycopy(ByteUtils.intToBytes(message.getRID()), 0, infoHead, 1, 4);
 		// 调用信息内容
 		byte[] invokeInfoBytes = getInvokeInfoBytes(message);
 		// 如果有请求的类信息
@@ -418,13 +418,13 @@ public class AntMessageHandler{
 				if(byteBuffer!=null) {
 					byteBuffer.flip();
 					len = byteBuffer.remaining();
-					byte[] lenBytes = ByteUtils.intToByte(len);
+					byte[] lenBytes = ByteUtils.intToBytes(len);
 					int lens = len+lenBytes.length+serialBuffer.position();
-					System.out.println("扩容前"+serialBuffer.remaining()+",对象:"+serialBuffer);
+//					System.out.println("扩容前"+serialBuffer.remaining()+",对象:"+serialBuffer);
 					if(lens > serialBuffer.remaining())
 						serialBuffer = ensureCapacity(serialBuffer,lens);
 					serialBuffer.limit(serialBuffer.capacity());
-					System.out.println("可用:"+serialBuffer.remaining()+",扩容:"+lens+",对象:"+serialBuffer);
+//					System.out.println("可用:"+serialBuffer.remaining()+",扩容:"+lens+",对象:"+serialBuffer);
 					serialBuffer.put(lenBytes);
 					//写入参数内容
 					while(byteBuffer != null && byteBuffer.hasRemaining()) {
@@ -432,7 +432,7 @@ public class AntMessageHandler{
 					}
 					byteBuffer.clear();
 				}else {
-					serialBuffer.put(ByteUtils.intToByte(len));
+					serialBuffer.put(ByteUtils.intToBytes(len));
 				}
 				serailzationHandler.clear();
 			}
@@ -446,15 +446,15 @@ public class AntMessageHandler{
 		int bodyLen = invokeParameter == null ? 0 :invokeParameter.length;
 		if (message.getBuffered() != null) {
 			// 写入消息信息长度 占2位
-			System.arraycopy(ByteUtils.unsignedShortToByte(message.getInvokeHeaderLen()), 0, infoHead, 5, 2);
+			System.arraycopy(ByteUtils.unsignedShortToBytes(message.getInvokeHeaderLen()), 0, infoHead, 5, 2);
 			// 写入消息体长度 占4位
-			System.arraycopy(ByteUtils.intToByte(message.getBuffered().length - message.getInvokeHeaderLen()), 0,
+			System.arraycopy(ByteUtils.intToBytes(message.getBuffered().length - message.getInvokeHeaderLen()), 0,
 					infoHead, 7, 4);
 		} else {
 			// 写入消息信息长度 占2位
-			System.arraycopy(ByteUtils.unsignedShortToByte(invokeInfoLen), 0, infoHead, 5, 2);
+			System.arraycopy(ByteUtils.unsignedShortToBytes(invokeInfoLen), 0, infoHead, 5, 2);
 			// 写入消息体长度 占4位
-			System.arraycopy(ByteUtils.intToByte(bodyLen), 0, infoHead, 7, 4);
+			System.arraycopy(ByteUtils.intToBytes(bodyLen), 0, infoHead, 7, 4);
 		}
 		//计算总长度
 //		System.out.println(PACKAGE_HEAD_LENGTH+bodyLen+invokeInfoLen+infoHead[0]);

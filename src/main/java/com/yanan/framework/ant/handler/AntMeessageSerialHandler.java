@@ -29,7 +29,6 @@ public class AntMeessageSerialHandler implements AntMessageSerialization{
 		if(serailBean==null)
 			return null;
 		try {
-			System.out.println("序列化时:"+message.getClass());
 			Kryo kryo = SerialUtils.getKryo();
 			kryo.writeClassAndObject(byteBufferOutput, serailBean);
 			byteBufferOutput.flush();
@@ -43,7 +42,6 @@ public class AntMeessageSerialHandler implements AntMessageSerialization{
 	@SuppressWarnings("unchecked")
 	@Override
 	public <T> T deserializationAntMessage(ByteBuffer byteBuffer, int position, int limit, Class<T> type) {
-		System.out.println("反序列化时:"+type);
 		Kryo kryo = SerialUtils.getKryo();
 		ByteBufferInput input = new ByteBufferInput(byteBuffer);
 		input.setPosition(position);

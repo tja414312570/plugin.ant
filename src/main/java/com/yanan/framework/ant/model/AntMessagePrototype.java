@@ -157,7 +157,7 @@ public class AntMessagePrototype{
 					for(int i = 0;i<nums;i++) {
 						buffer.limit(recoderLimit);
 						buffer.get(paramLenByte);
-						paramLen = ByteUtils.byteToInt(paramLenByte);
+						paramLen = ByteUtils.bytesToInt(paramLenByte);
 						position+=4;
 						limit = position+paramLen;
 						if(position != limit) {
