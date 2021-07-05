@@ -3,11 +3,12 @@ package com.yanan.framework.ant.protocol.ant;
 import java.util.Iterator;
 import java.util.LinkedList;
 
+import com.yanan.framework.ant.abstracts.ClientInstance;
 import com.yanan.framework.ant.service.AntRuntimeService;
 
 public class AntClientRegisterService {
 //	private static AntClientRegisterService antClientRegisterService;
-	private LinkedList<AntClientInstance> waitRegisterList = new LinkedList<AntClientInstance>();
+	private LinkedList<ClientInstance> waitRegisterList = new LinkedList<>();
 	private Thread registerCheckThread;
 	private AntRegisterCheckService registerCheckService;
 	private AntRuntimeService runtimeService;
@@ -19,7 +20,7 @@ public class AntClientRegisterService {
 		registerCheckThread.setDaemon(true);
 		registerCheckThread.start();
 	}
-	public LinkedList<AntClientInstance> getWaitRegisterList() {
+	public LinkedList<ClientInstance> getWaitRegisterList() {
 		return waitRegisterList;
 	}
 	
@@ -29,9 +30,9 @@ public class AntClientRegisterService {
 		//锁定列表
 		synchronized (waitRegisterList) {
 			//迭代
-			Iterator<AntClientInstance> iterator = waitRegisterList.iterator();
+			Iterator<ClientInstance> iterator = waitRegisterList.iterator();
 			while(iterator.hasNext()) {
-				AntClientInstance handler = iterator.next();
+				ClientInstance handler = iterator.next();
 				//注册时间判断
 				if(now - handler.getServiceInstance().getClientTime()>
 				handler.getRuntimeService().getContextConfigure().getTimeout()) {
@@ -69,11 +70,11 @@ public class AntClientRegisterService {
 	}
 
 
-	public void register(AntClientInstance handler) {
+	public void register(ClientInstance handler) {
 		if(!this.waitRegisterList.contains(handler))
 			this.waitRegisterList.add(handler);
 	}
-	public void registerSuccess(AntClientInstance handler) {
+	public void registerSuccess(ClientInstance handler) {
 		this.waitRegisterList.remove(handler);
 	}
 }

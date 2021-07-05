@@ -100,7 +100,7 @@ public class AntClientService implements ClientService{
 				throw new AntInitException(e);
 			}
 	}
-	public void handler(SocketChannel socketChannel, AntClientInstance clientInstance) {
+	public void handler(SocketChannel socketChannel,ClientInstance clientInstance) {
 		this.handlerMapping.put(socketChannel, clientInstance);
 	}
 	public ClientInstance getHandler(SocketChannel socketChannel) {
@@ -115,5 +115,10 @@ public class AntClientService implements ClientService{
 	}
 	public AntClientRegisterService getAntClientRegisterService() {
 		return antClientRegisterService;
+	}
+	@Override
+	public ClientInstance getClientHandler(SocketChannel socketChannel) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 }

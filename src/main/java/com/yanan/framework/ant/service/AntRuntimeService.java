@@ -108,6 +108,10 @@ public class AntRuntimeService {
 		logger.debug("try connect ant provider service");
 		try {
 			long t1 = System.currentTimeMillis();
+			//判断是否是服务提供者环境
+			if(antContext.getContextConfigure().getPort()>0) {
+				
+			}
 			try {
 				clientService = PlugsFactory.getPluginsInstance(ClientService.class, this);
 			}catch(Throwable t) {

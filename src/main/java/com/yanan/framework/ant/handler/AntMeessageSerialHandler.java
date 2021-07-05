@@ -2,6 +2,7 @@ package com.yanan.framework.ant.handler;
 
 import java.nio.ByteBuffer;
 
+import com.yanan.framework.a.serial.MessageSerialException;
 import com.yanan.framework.ant.exception.AntMessageSerialException;
 import com.yanan.framework.ant.interfaces.AntMessageSerialization;
 import com.yanan.framework.ant.model.AntMessagePrototype;
@@ -25,7 +26,7 @@ public class AntMeessageSerialHandler implements AntMessageSerialization{
 		byteBufferOutput = new ByteBufferOutput(buffer,2048000);
 	}
 
-	public ByteBuffer serialAntMessage(Object serailBean, AntMessagePrototype message) {
+	public ByteBuffer serialAntMessage(Object serailBean) {
 		if(serailBean==null)
 			return null;
 		try {
@@ -33,7 +34,7 @@ public class AntMeessageSerialHandler implements AntMessageSerialization{
 			kryo.writeClassAndObject(byteBufferOutput, serailBean);
 			byteBufferOutput.flush();
 		} catch (KryoException e) {
-			throw new AntMessageSerialException("Message body serialization exception", e, message);
+			throw new MessageSerialException("Message body serialization exception", e);
 		} 
 	return byteBufferOutput.getByteBuffer();
 	}

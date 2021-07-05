@@ -15,7 +15,7 @@ public class AntContextConfigure {
 	/**
 	 * 端口
 	 */
-	private String port;
+	private int port;
 	/**
 	 * 地址
 	 */
@@ -81,11 +81,11 @@ public class AntContextConfigure {
 		this.name = name;
 	}
 
-	public String getPort() {
+	public int getPort() {
 		return port;
 	}
 
-	public void setPort(String port) {
+	public void setPort(int port) {
 		this.port = port;
 	}
 

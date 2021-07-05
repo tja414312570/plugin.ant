@@ -7,14 +7,18 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.yanan.framework.ant.abstracts.AbstractProcess;
+import com.yanan.framework.ant.abstracts.ClientInstance;
+import com.yanan.framework.ant.abstracts.ClientService;
 import com.yanan.framework.ant.model.AntProviderSummary;
 import com.yanan.framework.ant.protocol.ant.handler.AntRegisterHandler;
 import com.yanan.framework.ant.utils.ObjectLock;
+import com.yanan.framework.plugin.Environment;
+import com.yanan.framework.plugin.PlugsFactory;
 
 public class AntChannelProcess extends AbstractProcess {
 	private SelectionKey key;
 	private int ops;
-	private AntClientService antClientService;
+	private ClientService clientService;
 	private SocketChannel socketChannel;
 
 	public void setKey(SelectionKey key) {
@@ -23,9 +27,9 @@ public class AntChannelProcess extends AbstractProcess {
 
 	private static Logger logger = LoggerFactory.getLogger(AntChannelProcess.class);
 
-	public AntChannelProcess(AntClientService antClientService, SocketChannel socketChannel, int ops,
+	public AntChannelProcess(ClientService clientService, SocketChannel socketChannel, int ops,
 			SelectionKey key) {
-		this.antClientService = antClientService;
+		this.clientService = clientService;
 		this.socketChannel = socketChannel;
 		this.ops = ops;
 		this.key = key;
@@ -33,10 +37,10 @@ public class AntChannelProcess extends AbstractProcess {
 
 	@Override
 	public void execute() {
-		AntClientInstance clientInstance;
+		ClientInstance clientInstance;
 		try {
 			if (ops == SelectionKey.OP_READ) {
-				clientInstance = (AntClientInstance) antClientService.getHandler(socketChannel);
+				clientInstance = clientService.getClientHandler(socketChannel);
 				if (clientInstance == null) {
 					socketChannel.close();
 				}
@@ -44,13 +48,14 @@ public class AntChannelProcess extends AbstractProcess {
 			} else if (ops == SelectionKey.OP_WRITE) {
 
 			} else if (ops == SelectionKey.OP_CONNECT) {
+				Environment.getEnviroment().distributeEvent(null, null);
 				AntProviderSummary antProviderSummary = (AntProviderSummary) key.attachment();
-				clientInstance = new AntClientInstance(antClientService, socketChannel,
-						antProviderSummary);
-				antClientService.handler(socketChannel, clientInstance);
+				clientInstance = PlugsFactory.getPluginsInstanceNew(ClientInstance.class);
+				clientInstance.init(clientService, socketChannel,antProviderSummary);
+				clientService.handler(socketChannel, clientInstance);
 				logger.debug("Socket channel connected:" + clientInstance);
 				AntRegisterHandler registerHandler = new AntRegisterHandler(clientInstance);
-				antClientService.getAntRegisterServcie().register(registerHandler);
+				clientService.getAntRegisterServcie().register(registerHandler);
 			} else if (ops == SelectionKey.OP_ACCEPT) {
 				logger.debug("service connection ip:" + socketChannel.getRemoteAddress());
 				socketChannel.configureBlocking(false);

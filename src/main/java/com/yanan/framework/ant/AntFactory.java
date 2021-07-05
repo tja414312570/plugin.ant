@@ -23,7 +23,7 @@ public class AntFactory {
 	private static final int XML = 2;
 	public static AntContext build(Config config) {
 		Assert.isNull(config, "Ant config is null");
-		Assert.isFalse(config.hasPath("Ant"), "could not found Ant config at this config "+config);
+		Assert.isFalse(config.hasPath("Ant"), "can't found Ant config at this config "+config);
 		AntContextConfigure contextConfigure = ConfigHelper.decode(config.getConfig("Ant"), AntContextConfigure.class);
 		AntContext antContext = new AntContext(contextConfigure);
 		return antContext;
@@ -76,7 +76,7 @@ public class AntFactory {
 		Assert.isNull(xmlHelper, "Ant config is null");
 		List<AntContextConfigure> contextConfigures = xmlHelper.read();
 		if(contextConfigures != null && contextConfigures.size()==0)
-			throw new PluginInitException("could not pase this xml resource from "+resourceMark);
+			throw new PluginInitException("can't pase this xml resource from "+resourceMark);
 		AntContext antContext = new AntContext(contextConfigures.get(0));
 		return antContext;
 	}
@@ -110,7 +110,7 @@ public class AntFactory {
 		Assert.isNull(propertiesWrapper.getProperty("Ant.name"),"Ant name properties is null");
 		antConfig.setName(propertiesWrapper.getProperty("Ant.name","plugin.server"));
 		antConfig.setProcess(propertiesWrapper.getInt("Ant.process", 1));
-		antConfig.setPort(propertiesWrapper.getProperty("Ant.server.port", "4281"));
+		antConfig.setPort(propertiesWrapper.getInt("Ant.server.port", 4281));
 		antConfig.setTimeout(propertiesWrapper.getInt("Ant.timeout", 30000));
 		String packages = propertiesWrapper.getProperty("Ant.package");
 		if(packages == null) {

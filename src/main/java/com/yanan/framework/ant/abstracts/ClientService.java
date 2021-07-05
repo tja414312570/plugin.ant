@@ -1,6 +1,7 @@
 package com.yanan.framework.ant.abstracts;
 
 import java.io.IOException;
+import java.nio.channels.SocketChannel;
 
 import com.yanan.framework.ant.model.AntProviderSummary;
 import com.yanan.framework.ant.service.AntRuntimeService;
@@ -29,5 +30,7 @@ public interface ClientService {
 	 * @return
 	 */
 	int getServerPort();
+	
+	ClientInstance getClientHandler(SocketChannel socketChannel);
 
 }
