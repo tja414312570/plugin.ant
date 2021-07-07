@@ -14,12 +14,18 @@ import com.yanan.framework.plugin.annotations.Service;
  */
 @Service //表明需要被代理
 public interface ChannelManager<K> {
-	<T> MessageChannel<T> getChannel(K name);
+	
 	void registerChannel(K name,ServerMessageChannel<?> channel);
-	<T> List<MessageChannel<T>> getChannelList(K name);
-	<T> Map<String,List<MessageChannel<T>>> getAllChannel();
+	
+	<T,I> MessageChannel<T> getChannel(I name);
+	
+	<T,I> List<MessageChannel<T>> getChannelList(I name);
+	
+	<T,I> Map<String,List<MessageChannel<T>>> getAllChannel();
 	
 	void start(ServerMessageChannel<?> serverMessageChannel);
+	
 	void start();
+	
 	void close();
 }

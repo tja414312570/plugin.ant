@@ -1,4 +1,4 @@
-package com.yanan.framework.a.channel.socket.server;
+package com.yanan.framework.a.core.cluster;
 
 import com.yanan.framework.a.core.server.ServerMessageChannel;
 

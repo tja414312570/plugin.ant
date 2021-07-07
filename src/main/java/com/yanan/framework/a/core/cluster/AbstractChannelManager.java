@@ -7,10 +7,11 @@ import javax.annotation.PostConstruct;
 
 import org.slf4j.Logger;
 
-import com.yanan.framework.a.channel.socket.server.ChannelNamingServer;
+import com.yanan.framework.a.core.MessageChannel;
 import com.yanan.framework.a.core.server.ServerMessageChannel;
 import com.yanan.framework.plugin.PlugsFactory;
 import com.yanan.framework.plugin.annotations.Service;
+import com.yanan.utils.asserts.Assert;
 import com.yanan.utils.reflect.TypeToken;
 
 /**
@@ -18,13 +19,15 @@ import com.yanan.utils.reflect.TypeToken;
  * @author YaNan
  *
  */
-public abstract class AbstractChannelManager<K> implements ChannelManager<K>{
+public abstract class AbstractChannelManager<K,N> implements ChannelManager<K>{
 
 	@Service
 	private Logger logger;
 	private List<ServerMessageChannel<?>> serverMessageChannelList = new CopyOnWriteArrayList<>();
+	private Class<?> discoveryServer;
 	@PostConstruct
 	public void init() {
+		discoveryServer =  PlugsFactory.getPluginsHandler(this).getRegisterDefinition().getRegisterClass();
 		System.err.println("hello world");
 	}
 	@Override
@@ -45,7 +48,6 @@ public abstract class AbstractChannelManager<K> implements ChannelManager<K>{
 	public K getServerName(ServerMessageChannel<?> channel) {
 		Class<?> channelClass = PlugsFactory.getPluginsHandler(channel).getRegisterDefinition().getRegisterClass();
 		logger.debug("通道类:"+channelClass);
-		Class<?> discoveryServer =  PlugsFactory.getPluginsHandler(this).getRegisterDefinition().getRegisterClass();
 		logger.debug("通道管理类:"+discoveryServer);
 		String nameSchme = channelClass.getSimpleName()+"_"+discoveryServer.getSimpleName();
 		logger.debug("命名规则:"+nameSchme);
@@ -53,13 +55,37 @@ public abstract class AbstractChannelManager<K> implements ChannelManager<K>{
 		ChannelNamingServer<K> namingServer = 
 				PlugsFactory.getPluginsInstanceByAttributeStrict(new TypeToken<ChannelNamingServer<K>>() {}.getTypeClass(),
 						nameSchme);
-		if(namingServer == null)
-			throw new RuntimeException("没有找到命名规则服务");
+		Assert.isNotNull(namingServer,"没有找到命名规则服务");
 		K serverName = namingServer.getServerName(channel);
 		return serverName;
+	}
+	public <I> N getChannelName(I name) {
+		Assert.isNotNull(name,"调用名称为空");
+		Class<?> nameClass = name.getClass();
+		logger.debug("名称类:"+nameClass);
+		logger.debug("通道管理类:"+discoveryServer);
+		String nameSchme = nameClass.getSimpleName()+"_"+discoveryServer.getSimpleName();
+		logger.debug("命名规则:"+nameSchme);
+		System.out.println("");
+		ChannelInstanceNameServer<N,I> namingServer = 
+				PlugsFactory.getPluginsInstanceByAttributeStrict(
+						new TypeToken<ChannelInstanceNameServer<N,I>>() {}.getTypeClass(),
+						nameSchme);
+		Assert.isNotNull(namingServer,"没有找到命名规则服务");
+		N serverName = namingServer.getInstanceName(name);
+		return serverName;
+	}
+	public <T,I> MessageChannel<T> getChannel(I name){
+		N serverName = getChannelName(name);
+		return getChannelInstance(serverName);
 	}
 	public List<ServerMessageChannel<?>> getSserverMessageChannelList() {
 		return serverMessageChannelList;
 	}
-
+	public <T,I> List<MessageChannel<T>> getChannelList(I name){
+		N serverName = getChannelName(name);
+		return getChannelInstanceList(serverName);
+	}
+	protected abstract <T> List<MessageChannel<T>> getChannelInstanceList(N serverName);
+	public abstract <T> MessageChannel<T> getChannelInstance(N name);
 }
