@@ -64,12 +64,19 @@ public class SocketChannelProcess extends AbstractProcess {
 						} else if (ops == SelectionKey.OP_WRITE) {
 
 						} else if (ops == SelectionKey.OP_CONNECT) {
-							logger.debug("service connection ip:" + socketChannel.getRemoteAddress());
-							messageChannel = PlugsFactory.getPluginsInstance(new TypeToken<AbstractMessageChannelHandler<SelectionKey>>() {}.getTypeClass());
-							logger.debug("service channel connected:" + messageChannel);
-							socketChannel.finishConnect();
-							LockSupports.unLock(socketChannel);
-							socketMapping.setMapping(socketChannel, messageChannel);
+							try {
+								logger.debug("service connection ip:" + socketChannel.getRemoteAddress());
+								messageChannel = PlugsFactory.getPluginsInstance(new TypeToken<AbstractMessageChannelHandler<SelectionKey>>() {}.getTypeClass());
+								logger.debug("service channel connected:" + messageChannel);
+								socketChannel.finishConnect();
+								socketMapping.setMapping(socketChannel, messageChannel);
+							}catch(Exception e) {
+								socketChannel.setOption(SocketOptions.EXCEPTION_OPTION, e);
+								throw e;
+							}finally {
+								LockSupports.unLock(socketChannel);
+							}
+							
 						} else if (ops == SelectionKey.OP_ACCEPT) {
 							logger.debug("client connection ip:" + socketChannel.getRemoteAddress());
 							socketChannel.configureBlocking(false);

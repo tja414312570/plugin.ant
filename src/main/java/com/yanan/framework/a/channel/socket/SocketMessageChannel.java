@@ -225,8 +225,12 @@ AbstractMessageChannelHandler<SelectionKey>
 			this.setSocketChannel(socketChannel);
 			selectorRunningService.registerChannel(socketChannel);
 			LockSupports.lock(socketChannel);
-		} catch (IOException e) {
+			Exception exception = socketChannel.getOption(SocketOptions.EXCEPTION_OPTION);
+			if(exception != null) 
+				throw exception;
+		} catch (Exception e) {
 			e.printStackTrace();
+			throw new RuntimeException(e);
 		}
 	}
 
@@ -276,5 +280,65 @@ AbstractMessageChannelHandler<SelectionKey>
 	@Override
 	public void setListener(MessageChannelListener<T> listener) {
 		
+	}
+
+	public Logger getLogger() {
+		return logger;
+	}
+
+	public void setLogger(Logger logger) {
+		this.logger = logger;
+	}
+
+	public void setMessageSerial(MessageSerialization messageSerial) {
+		this.messageSerial = messageSerial;
+	}
+
+	public void setSelectorRunningService(SelectorRunningService selectorRunningService) {
+		this.selectorRunningService = selectorRunningService;
+	}
+
+	public void setMessageChanelHadnler(Map<SocketChannel, AbstractMessageChannelHandler<?>> messageChanelHadnler) {
+		this.messageChanelHadnler = messageChanelHadnler;
+	}
+
+	public void setChannelStatus(ChannelStatus channelStatus) {
+		this.channelStatus = channelStatus;
+	}
+
+	public void setPort(int port) {
+		this.port = port;
+	}
+
+	public void setHost(String host) {
+		this.host = host;
+	}
+
+	public void setChannelEvent(ChannelEventSource channelEvent) {
+		this.channelEvent = channelEvent;
+	}
+
+	public void setMessageHandler(MessageHandler<T> messageHandler) {
+		this.messageHandler = messageHandler;
+	}
+
+	public void setBufferHandler(ByteBufferChannel<Message<MessageType>> bufferHandler) {
+		this.bufferHandler = bufferHandler;
+	}
+
+	public void setSocketMessageChannelMapping(MessageChannelMapping<T> socketMessageChannelMapping) {
+		this.socketMessageChannelMapping = socketMessageChannelMapping;
+	}
+
+	public void setMessageProvider(MessageProvider messageProvider) {
+		this.messageProvider = messageProvider;
+	}
+
+	public void setMessageWriteHandler(BufferReady<Message<MessageType>> messageWriteHandler) {
+		this.messageWriteHandler = messageWriteHandler;
+	}
+
+	public void setClientType(ClientType clientType) {
+		this.clientType = clientType;
 	}
 }

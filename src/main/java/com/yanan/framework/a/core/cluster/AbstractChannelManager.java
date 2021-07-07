@@ -28,7 +28,7 @@ public abstract class AbstractChannelManager<K,N> implements ChannelManager<K>{
 	@PostConstruct
 	public void init() {
 		discoveryServer =  PlugsFactory.getPluginsHandler(this).getRegisterDefinition().getRegisterClass();
-		System.err.println("hello world");
+		System.err.println("hello , this is test info , build by yanan !");
 	}
 	@Override
 	public void start(ServerMessageChannel<?> channel) {
@@ -51,7 +51,6 @@ public abstract class AbstractChannelManager<K,N> implements ChannelManager<K>{
 		logger.debug("通道管理类:"+discoveryServer);
 		String nameSchme = channelClass.getSimpleName()+"_"+discoveryServer.getSimpleName();
 		logger.debug("命名规则:"+nameSchme);
-		System.out.println("");
 		ChannelNamingServer<K> namingServer = 
 				PlugsFactory.getPluginsInstanceByAttributeStrict(new TypeToken<ChannelNamingServer<K>>() {}.getTypeClass(),
 						nameSchme);
@@ -66,7 +65,6 @@ public abstract class AbstractChannelManager<K,N> implements ChannelManager<K>{
 		logger.debug("通道管理类:"+discoveryServer);
 		String nameSchme = nameClass.getSimpleName()+"_"+discoveryServer.getSimpleName();
 		logger.debug("命名规则:"+nameSchme);
-		System.out.println("");
 		ChannelInstanceNameServer<N,I> namingServer = 
 				PlugsFactory.getPluginsInstanceByAttributeStrict(
 						new TypeToken<ChannelInstanceNameServer<N,I>>() {}.getTypeClass(),

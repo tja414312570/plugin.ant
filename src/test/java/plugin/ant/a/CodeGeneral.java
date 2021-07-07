@@ -16,7 +16,7 @@ public class CodeGeneral {
 	public static void main(String[] args) {
 		 try {  
 			 Path path = new Path("/Volumes/GENERAL/git/plugin.ant.core/src/main/java/com");///Users/yanan/Workspaces/MyEclipse 2017 CI/springFramework
-			 path.filter("**.java");
+			 path.filter("**/a/**.java");
 			 path.scanner(new PathInter() {
 				@Override
 				public void find(File file) {
