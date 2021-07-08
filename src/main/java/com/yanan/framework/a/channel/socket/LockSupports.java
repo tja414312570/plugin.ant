@@ -16,6 +16,7 @@ import com.yanan.utils.reflect.cache.ClassHelper;
 
 /**
  * 提供线程线程通信
+ * 使用缓存表，当对象不在被其他对象强引用后会被GC自动回收
  * @author YaNan
  *
  */
