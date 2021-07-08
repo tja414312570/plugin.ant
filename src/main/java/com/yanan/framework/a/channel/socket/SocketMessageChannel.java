@@ -182,6 +182,7 @@ AbstractMessageChannelHandler<SelectionKey>
 		logger.debug("关闭");
 		channelStatus = ChannelStatus.CLOSE;
 		try {
+			LockSupports.removeLockThread(socketChannel);
 			socketMessageChannelMapping.remove(this.socketChannel.getRemoteAddress().toString());
 			socketChannel.close();
 			selectorRunningService.removeChannel(socketChannel);
@@ -215,23 +216,19 @@ AbstractMessageChannelHandler<SelectionKey>
 	}
 
 	private void openClient() {
-		try {
-			//客户端逻辑
-			socketChannel = SocketChannel.open();
-			logger.debug("client port:"+this.port);
-			socketChannel.configureBlocking(false);
-			socketChannel.connect(new InetSocketAddress("127.0.0.1",this.port));
-			socketChannel.register(selectorRunningService.getSelector(), SelectionKey.OP_CONNECT);
-			this.setSocketChannel(socketChannel);
-			selectorRunningService.registerChannel(socketChannel);
-			LockSupports.lock(socketChannel);
-			Exception exception = socketChannel.getOption(SocketOptions.EXCEPTION_OPTION);
-			if(exception != null) 
-				throw exception;
-		} catch (Exception e) {
-			e.printStackTrace();
-			throw new RuntimeException(e);
-		}
+			try {
+				//客户端逻辑
+				socketChannel = SocketChannel.open();
+				logger.debug("client port:"+this.port);
+				socketChannel.configureBlocking(false);
+				socketChannel.connect(new InetSocketAddress("127.0.0.1",this.port));
+				socketChannel.register(selectorRunningService.getSelector(), SelectionKey.OP_CONNECT);
+				this.setSocketChannel(socketChannel);
+				selectorRunningService.registerChannel(socketChannel);
+				LockSupports.lockAndCatch(socketChannel);
+			} catch (IOException e) {
+				throw new RuntimeException(e);
+			}
 	}
 
 	@Override

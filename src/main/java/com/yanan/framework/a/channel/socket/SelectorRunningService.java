@@ -34,9 +34,11 @@ public class SelectorRunningService implements Runnable {
 	private boolean DISABLE_KEYSET_OPTIMIZATION;
 	@Service
 	private ExecutorServer executorServer;
-	private Set<AbstractSelectableChannel> channelList = Collections.synchronizedSet(new HashSet<AbstractSelectableChannel>());
+	private Set<AbstractSelectableChannel> channelList = Collections
+			.synchronizedSet(new HashSet<AbstractSelectableChannel>());
 	private SelectedSelectionKeySet selectedKeySet;
 	private volatile boolean available;
+
 	public Selector getSelector() {
 		return selector;
 	}
@@ -76,28 +78,29 @@ public class SelectorRunningService implements Runnable {
 		// 创建选择器
 		openSelector();
 	}
+
 	public void registerChannel(AbstractSelectableChannel messageChannel) {
-		System.err.println("---------"+this.channelList+"------------>"+messageChannel);
 		this.channelList.add(messageChannel);
-		System.err.println("---------"+this.channelList);
 		this.loopSelector();
 	}
+
 	public void removeChannel(AbstractSelectableChannel messageChannel) {
 		this.channelList.remove(messageChannel);
-		System.err.println(this.channelList+"======>"+messageChannel);
-		if(this.channelList.isEmpty())
+		if (this.channelList.isEmpty())
 			this.close();
 	}
+
 	public synchronized void loopSelector() {
-		if(!this.available) {
+		if (!this.available) {
 			this.available = true;
 			executorServer.execute(this);
 		}
 	}
+
 	public synchronized void close() {
-		System.err.println("关闭服务"+this.channelList);
 		this.available = false;
 	}
+
 	@Override
 	public void run() {
 		while (available) {
@@ -136,7 +139,8 @@ public class SelectorRunningService implements Runnable {
 				logger.debug("accept a service connection!");
 				socketChannel = ((ServerSocketChannel) key.channel()).accept();
 				logger.debug("service connection ip:" + socketChannel.getRemoteAddress());
-				executorServer.execute(PlugsFactory.getPluginsInstance(SocketChannelProcess.class,socketChannel, SelectionKey.OP_ACCEPT, key));
+				executorServer.execute(PlugsFactory.getPluginsInstance(SocketChannelProcess.class, socketChannel,
+						SelectionKey.OP_ACCEPT, key));
 //				PlugsFactory.getPluginsInstance(SocketChannelProcess.class,socketChannel,  SelectionKey.OP_CONNECT, key).run();
 				return;
 			}
@@ -145,13 +149,15 @@ public class SelectorRunningService implements Runnable {
 			if (key.isConnectable()) {
 				logger.debug("connect to service:" + socketChannel.getRemoteAddress());
 				key.interestOps(SelectionKey.OP_READ);
-				executorServer.executeProcess(PlugsFactory.getPluginsInstance(SocketChannelProcess.class, socketChannel,SelectionKey.OP_CONNECT, key));
+				executorServer.executeProcess(PlugsFactory.getPluginsInstance(SocketChannelProcess.class, socketChannel,
+						SelectionKey.OP_CONNECT, key));
 //				PlugsFactory.getPluginsInstance(SocketChannelProcess.class,socketChannel,  SelectionKey.OP_CONNECT, key).run();
 			}
 			// 可读
 			if (key.isReadable()) {
 				logger.debug("read to service:" + socketChannel.getRemoteAddress());
-				executorServer.executeProcess(ProcessProvider.requireChannerlProcess(socketChannel, SelectionKey.OP_READ, key));
+				executorServer.executeProcess(
+						ProcessProvider.requireChannerlProcess(socketChannel, SelectionKey.OP_READ, key));
 			}
 			// 可写
 			if (key.isWritable()) {

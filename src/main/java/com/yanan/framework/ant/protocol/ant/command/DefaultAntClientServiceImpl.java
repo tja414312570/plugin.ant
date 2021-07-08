@@ -17,7 +17,6 @@ import com.yanan.framework.plugin.ProxyModel;
  * @author yanan
  *
  */
-@Ant
 @Register(model=ProxyModel.CGLIB)
 public class DefaultAntClientServiceImpl implements  AntClientCommandService{
 	private Logger logger = LoggerFactory.getLogger(DefaultAntClientServiceImpl.class);

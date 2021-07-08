@@ -42,7 +42,6 @@ public class SocketChannelProcess extends AbstractProcess {
 		this.socketChannel = socketChannel;
 		this.ops = ops;
 		this.key = key;
-		System.err.println("==任务:"+ops+"==>"+key.isValid()+"==>"+key);
 	}
 
 	@SuppressWarnings("unchecked")
@@ -70,11 +69,10 @@ public class SocketChannelProcess extends AbstractProcess {
 								logger.debug("service channel connected:" + messageChannel);
 								socketChannel.finishConnect();
 								socketMapping.setMapping(socketChannel, messageChannel);
-							}catch(Exception e) {
-								socketChannel.setOption(SocketOptions.EXCEPTION_OPTION, e);
-								throw e;
-							}finally {
 								LockSupports.unLock(socketChannel);
+							}catch(Exception e) {
+								LockSupports.unLockAndThrows(socketChannel, e);
+								throw e;
 							}
 							
 						} else if (ops == SelectionKey.OP_ACCEPT) {
@@ -96,7 +94,6 @@ public class SocketChannelProcess extends AbstractProcess {
 							});
 						}
 					} catch (Throwable e) {
-						e.printStackTrace();
 						logger.error("error to execute process!"+toString(),e);
 						messageChannel = socketMapping.getMapping(socketChannel);
 						if(messageChannel != null) {
