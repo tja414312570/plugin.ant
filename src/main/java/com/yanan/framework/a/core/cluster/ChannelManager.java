@@ -28,4 +28,6 @@ public interface ChannelManager<K> {
 	void start();
 	
 	void close();
+	
+	<T> ServerMessageChannel<T> getServerChannel();
 }

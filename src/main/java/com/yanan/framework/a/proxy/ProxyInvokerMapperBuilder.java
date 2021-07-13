@@ -2,10 +2,9 @@ package com.yanan.framework.a.proxy;
 
 import java.lang.reflect.Method;
 
-import javax.annotation.PostConstruct;
-
 import org.slf4j.Logger;
 
+import com.yanan.framework.a.dispatcher.ChannelDispatcher;
 import com.yanan.framework.plugin.Plugin;
 import com.yanan.framework.plugin.PlugsFactory;
 import com.yanan.framework.plugin.ProxyModel;
@@ -14,22 +13,23 @@ import com.yanan.framework.plugin.annotations.Service;
 import com.yanan.framework.plugin.builder.PluginDefinitionBuilderFactory;
 import com.yanan.framework.plugin.builder.PluginInstanceFactory;
 import com.yanan.framework.plugin.definition.RegisterDefinition;
+import com.yanan.framework.plugin.handler.InvokeHandler;
 import com.yanan.utils.resource.scanner.PackageScanner;
 import com.yanan.utils.resource.scanner.PackageScanner.ClassInter;
 
-@Register(id = "proxyInvokerMapperBuilder", layInit = false)
-public class ProxyInvokerMapperBuilder {
+@Register(id = "proxyInvokerMapperBuilder")
+public class ProxyInvokerMapperBuilder implements ProxyInvokerMapper{
 	@Service
 	private Logger logger;
 	private InvokeProxy antInvokeProxy;
 	private String[] scanPath = { "classpath:**" };
+	private ChannelDispatcher<?> channelDispatcher;
 
-	@PostConstruct
-	public void execute() {
+	public void initProxy() {
 		logger.debug("proxy invoke mapper start");
 		antInvokeProxy = PlugsFactory.getPluginsInstance(InvokeProxy.class);
 		// 从组件工厂获取所有的组件，就不必要重新扫描整个类了
-		RegisterDefinition register = PluginDefinitionBuilderFactory.builderRegisterDefinition(InvokeProxy.class);
+		RegisterDefinition register = PluginDefinitionBuilderFactory.builderRegisterDefinition(InvokeProxyer.class);
 		logger.debug("proxy register " + register);
 		// 创建一个此注册器的代理容器
 		register.createProxyContainer();
@@ -52,10 +52,12 @@ public class ProxyInvokerMapperBuilder {
 					plug.addRegister(register);
 					PlugsFactory.getInstance().addPlugininDefinition(plug);
 					// 需要为每个接口实现一个对应的jdk代理对象
-					Object proxy = PlugsFactory.getPluginsInstanceByInsClass(cls, InvokeProxy.class);
+					InvokeProxy proxy = (InvokeProxy) PlugsFactory.getPluginsInstanceByInsClass(cls, InvokeProxyer.class);
+					System.err.println("proxy:"+proxy);
+					proxy.bind(channelDispatcher);
 					// 对接口方法进行代理，代理对象为本身，目的是为了拦截方法的执行
 					for (Method method : plug.getDefinition().getPlugClass().getMethods()) {
-						register.addMethodHandler(method, antInvokeProxy);
+						register.addMethodHandler(method, (InvokeHandler) antInvokeProxy);
 					}
 					// 生成代理容器中实例的key
 					int hash = PluginInstanceFactory.hash(plug.getDefinition().getPlugClass());
@@ -72,5 +74,11 @@ public class ProxyInvokerMapperBuilder {
 
 	public void setScanPath(String[] scanPath) {
 		this.scanPath = scanPath;
+	}
+
+	@Override
+	public void bind(ChannelDispatcher<?> channelDispatcher) {
+		this.channelDispatcher = channelDispatcher;
+		initProxy();
 	}
 }

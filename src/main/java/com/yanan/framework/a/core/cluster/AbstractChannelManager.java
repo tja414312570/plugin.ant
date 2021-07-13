@@ -1,7 +1,6 @@
 package com.yanan.framework.a.core.cluster;
 
 import java.util.List;
-import java.util.concurrent.CopyOnWriteArrayList;
 
 import javax.annotation.PostConstruct;
 
@@ -23,7 +22,8 @@ public abstract class AbstractChannelManager<K,N> implements ChannelManager<K>{
 
 	@Service
 	private Logger logger;
-	private List<ServerMessageChannel<?>> serverMessageChannelList = new CopyOnWriteArrayList<>();
+//	private List<ServerMessageChannel<?>> serverMessageChannelList = new CopyOnWriteArrayList<>();
+	private ServerMessageChannel<?> serverMessageChannel;
 	private Class<?> discoveryServer;
 	@PostConstruct
 	public void init() {
@@ -38,7 +38,7 @@ public abstract class AbstractChannelManager<K,N> implements ChannelManager<K>{
 	}
 	public void startServerChannel(ServerMessageChannel<?> channel) {
 		logger.debug("开启服务提供通道:"+channel);
-		this.serverMessageChannelList.add(channel);
+		this.serverMessageChannel = channel;
 		channel.open();
 		logger.debug("注册服务..."); 
 		K serverName = getServerName(channel);
@@ -73,12 +73,12 @@ public abstract class AbstractChannelManager<K,N> implements ChannelManager<K>{
 		N serverName = namingServer.getInstanceName(name);
 		return serverName;
 	}
+	public ServerMessageChannel<?> getServerChannel(){
+		return serverMessageChannel;
+	}
 	public <T,I> MessageChannel<T> getChannel(I name){
 		N serverName = getChannelName(name);
 		return getChannelInstance(serverName);
-	}
-	public List<ServerMessageChannel<?>> getSserverMessageChannelList() {
-		return serverMessageChannelList;
 	}
 	public <T,I> List<MessageChannel<T>> getChannelList(I name){
 		N serverName = getChannelName(name);

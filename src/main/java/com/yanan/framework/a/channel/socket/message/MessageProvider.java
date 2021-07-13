@@ -4,7 +4,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import com.yanan.framework.plugin.annotations.Register;
 
-@Register(signlTon = false)
+@Register(signlTon = true)
 public class MessageProvider {
 	private AtomicInteger atomicInteger = new AtomicInteger();
 	public synchronized int getId() {

@@ -103,7 +103,13 @@ public class ByteBufferChannelHandler<T> implements ByteBufferChannel<T>{
 	 * @throws IOException
 	 */
 	public synchronized void handleRead() {
-		this.bufferReady.handleRead(readBuffer);
+		try {
+			this.bufferReady.handleRead(readBuffer);
+		}finally {
+			read();
+		}
+	}
+	private void read() {
 		boolean compact = false;
 		// 从通道读取数据
 			try {
@@ -204,7 +210,6 @@ public class ByteBufferChannelHandler<T> implements ByteBufferChannel<T>{
 	 * @return
 	 */
 	public static ByteBuffer ensureCapacity(ByteBuffer byteBuffer, int len) {
-		System.err.println("容量:"+byteBuffer.capacity());
 		if(byteBuffer.capacity()>=len)
 			return byteBuffer;
 		ByteBuffer  newBuffer = 

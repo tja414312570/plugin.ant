@@ -4,19 +4,19 @@ public class MessagePrototype<T>{
 	/**
 	 * 消息的请求ID
 	 */
-	private int RID;
+	protected int RID;
 	/**
 	 * 消息类型 参考MessageType
 	 */
-	private int type;
+	protected int type;
 	/**
 	 * 调用信息
 	 */
-	private T invoker;
+	protected T invoker;
 	/**
 	 * 消息超时
 	 */
-	private int timeout;
+	protected int timeout;
 	public int getRID() {
 		return RID;
 	}

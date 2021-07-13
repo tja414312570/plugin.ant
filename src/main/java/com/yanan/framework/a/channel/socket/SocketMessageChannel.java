@@ -163,6 +163,9 @@ AbstractMessageChannelHandler<SelectionKey>
 			}
 			public void onMessage(Message<MessageType> message) {
 				try {
+					if(message.getMessageType() == MessageType.EXCEPTION) {
+						throw new RuntimeException("remote error message fomr "+socketChannel.getRemoteAddress()+" : "+message.getMessage());
+					}
 					messageHandler.onMessage(message.getMessage());
 					logger.debug("accept message from '" + socketChannel.getRemoteAddress() + "':" + message);
 				} catch (IOException e) {
@@ -231,6 +234,7 @@ AbstractMessageChannelHandler<SelectionKey>
 			}
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
 	public void transport(T message) {
 		logger.debug("发送："+message);
@@ -238,7 +242,12 @@ AbstractMessageChannelHandler<SelectionKey>
 		String messageType = message.getClass().getName();
 		logger.debug("消息类型:"+messageType);
 		logger.debug("序列化工具:"+bufferHandler);
-		Message<MessageType> protocolMessage = messageProvider.request(message);
+		Message<MessageType> protocolMessage;
+		if(message instanceof Message) {
+			protocolMessage = (Message<MessageType>) message;
+		}else {
+			protocolMessage = messageProvider.request(message);
+		}
 		//写入队列
 		this.bufferHandler.write(protocolMessage);
 	}
@@ -266,6 +275,7 @@ AbstractMessageChannelHandler<SelectionKey>
 	}
 	protected void writeToChannel(ByteBuffer buffer) throws WriteAbortedException {
 		try {
+			System.err.println("写入数据:"+socketChannel.finishConnect());
 			if(!socketChannel.finishConnect())
 				throw new NotYetConnectedException();
 			socketChannel.write(buffer);

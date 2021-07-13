@@ -1,0 +1,51 @@
+package com.yanan.framework.a.dispatcher;
+
+import com.yanan.framework.a.core.MessageChannel;
+
+public class DefaultDispatcherContext<T> implements DispatcherContext<T>{
+	protected MessageChannel<Object> messageChannel;
+	protected long requestTime;
+	protected T message;
+	protected ChannelDispatcher<?> channelDispatcher;
+	protected MessagePrototype<Object> messagePrototype;
+
+	public MessagePrototype<?> getMessagePrototype() {
+		return messagePrototype;
+	}
+
+	@SuppressWarnings("unchecked")
+	public void setMessagePrototype(MessagePrototype<?> messagePrototype) {
+		this.messagePrototype = (MessagePrototype<Object>) messagePrototype;
+	}
+	public MessageChannel<?> getMessageChannel() {
+		return messageChannel;
+	}
+	@SuppressWarnings("unchecked")
+	public void setMessageChannel(MessageChannel<?> messageChannel) {
+		this.messageChannel = (MessageChannel<Object>) messageChannel;
+	}
+	public Long getRequestTime() {
+		return requestTime;
+	}
+	public void setRequestTime(Long requestTime) {
+		this.requestTime = requestTime;
+	}
+	public T getMessage() {
+		return message;
+	}
+	public void setMessage(T message) {
+		this.message = message;
+	}
+	public ChannelDispatcher<?> getChannelDispatcher() {
+		return channelDispatcher;
+	}
+	public void setChannelDispatcher(ChannelDispatcher<?> channelDispatcher) {
+		this.channelDispatcher = channelDispatcher;
+	}
+
+	@Override
+	public void response(Object message) {
+		messagePrototype.setInvoker(message);
+		messageChannel.transport(messagePrototype);
+	};
+}

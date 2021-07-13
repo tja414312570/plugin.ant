@@ -106,7 +106,7 @@ public class SelectorRunningService implements Runnable {
 		while (available) {
 //			System.err.println("轮训");
 			try {
-				if (selector.select(1) == 0) {// 强制50ms执行一次，因为需要先select后register，造成死锁
+				if (selector.selectNow() == 0) {
 					continue;
 				}
 				if (!DISABLE_KEYSET_OPTIMIZATION) {
@@ -133,6 +133,8 @@ public class SelectorRunningService implements Runnable {
 
 	public void processKey(SelectionKey key) throws IOException {
 		SocketChannel socketChannel;
+//		if(!key.isValid() || !key.isConnectable())
+//			return;
 		try {
 			// 客户端连接到此设备
 			if (key.isAcceptable()) {
@@ -160,9 +162,9 @@ public class SelectorRunningService implements Runnable {
 						ProcessProvider.requireChannerlProcess(socketChannel, SelectionKey.OP_READ, key));
 			}
 			// 可写
-			if (key.isWritable()) {
-//				                	handler.handlWrite(key);
-			}
+//			if (key.isWritable()) {
+////				                	handler.handlWrite(key);
+//			}
 		} catch (Throwable e) {
 //			key.cancel();
 			e.printStackTrace();
