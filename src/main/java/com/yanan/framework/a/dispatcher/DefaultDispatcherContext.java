@@ -1,6 +1,7 @@
 package com.yanan.framework.a.dispatcher;
 
 import com.yanan.framework.a.core.MessageChannel;
+import com.yanan.framework.ant.type.MessageType;
 
 public class DefaultDispatcherContext<T> implements DispatcherContext<T>{
 	protected MessageChannel<Object> messageChannel;
@@ -16,6 +17,7 @@ public class DefaultDispatcherContext<T> implements DispatcherContext<T>{
 	@SuppressWarnings("unchecked")
 	public void setMessagePrototype(MessagePrototype<?> messagePrototype) {
 		this.messagePrototype = (MessagePrototype<Object>) messagePrototype;
+		this.message = (T) messagePrototype.getInvoker();
 	}
 	public MessageChannel<?> getMessageChannel() {
 		return messageChannel;
@@ -46,6 +48,7 @@ public class DefaultDispatcherContext<T> implements DispatcherContext<T>{
 	@Override
 	public void response(Object message) {
 		messagePrototype.setInvoker(message);
+		messagePrototype.setType(MessageType.RESPONSE);
 		messageChannel.transport(messagePrototype);
 	};
 }

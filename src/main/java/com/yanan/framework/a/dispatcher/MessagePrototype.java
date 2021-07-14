@@ -4,7 +4,7 @@ public class MessagePrototype<T>{
 	/**
 	 * 消息的请求ID
 	 */
-	protected int RID;
+	protected Integer RID;
 	/**
 	 * 消息类型 参考MessageType
 	 */
@@ -17,7 +17,7 @@ public class MessagePrototype<T>{
 	 * 消息超时
 	 */
 	protected int timeout;
-	public int getRID() {
+	public Integer getRID() {
 		return RID;
 	}
 	public void setRID(int rID) {

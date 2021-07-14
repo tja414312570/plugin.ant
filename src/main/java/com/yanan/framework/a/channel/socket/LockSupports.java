@@ -68,8 +68,10 @@ public class LockSupports {
 	}
 	public static void set(Object lock,Object key,Object value) {
 		Thread thread = getLockThread(lock);
-		if(thread == null)
+		if(thread == null) {
 			setLockThread(lock);
+			thread = getLockThread(lock);
+		}
 		Map<Object,Object> valueMap = getThreadLocalValue(thread, threadLocal);
 		if(valueMap ==null)
 			valueMap = createThreadLocalMap(thread,threadLocal, new ConcurrentHashMap<>());

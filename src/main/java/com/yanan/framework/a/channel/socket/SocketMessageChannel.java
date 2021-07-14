@@ -275,7 +275,7 @@ AbstractMessageChannelHandler<SelectionKey>
 	}
 	protected void writeToChannel(ByteBuffer buffer) throws WriteAbortedException {
 		try {
-			System.err.println("写入数据:"+socketChannel.finishConnect());
+//			System.err.println("写入数据:"+socketChannel.finishConnect());
 			if(!socketChannel.finishConnect())
 				throw new NotYetConnectedException();
 			socketChannel.write(buffer);
