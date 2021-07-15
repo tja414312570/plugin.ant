@@ -131,7 +131,7 @@ ServerMessageChannelLinstener{
 			selectorRunningService.registerChannel(serverSocketChannel);
 			//初始化读写的bytebuffer  
 		} catch (IOException e) {
-			e.printStackTrace();
+			throw new RuntimeException("failed to open channel!",e);
 		}
 		channelStatus = ChannelStatus.OPEN;
 	}
