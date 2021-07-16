@@ -6,7 +6,6 @@ import com.yanan.framework.a.channel.socket.LockSupports;
 import com.yanan.framework.a.dispatcher.ChannelDispatcher;
 import com.yanan.framework.ant.annotations.AntLock;
 import com.yanan.framework.ant.handler.AntServiceInstance;
-import com.yanan.framework.ant.model.AntRequest;
 import com.yanan.framework.plugin.annotations.Register;
 import com.yanan.framework.plugin.annotations.Service;
 import com.yanan.framework.plugin.annotations.Support;
@@ -37,9 +36,7 @@ public class InvokeProxyer implements InvokeHandler,InvokeProxy{
 		AntLock lock = null;
 		AntServiceInstance clientHandler = null;
 		try {
-			System.err.println(methodHandler.getPlugsProxy().getProxyObject()+"");
 			Callback<Object> callBack = LockSupports.get(methodHandler.getProxy(), Callback.class);
-			System.err.println("回调2:"+callBack);
 			Class<?> clzz = methodHandler.getPlugsProxy().getInterfaceClass();
 			lock = clzz.getAnnotation(AntLock.class);
 			if (lock == null)
@@ -57,8 +54,8 @@ public class InvokeProxyer implements InvokeHandler,InvokeProxy{
 			}else {
 				logger.debug("使用同步调用方式");
 				result = channelDispatcher.request(rpc.value(),invokers);
+				logger.debug("远程返回数据:"+result);
 			}
-			System.err.println("远程返回结果:"+result);
 			methodHandler.interrupt(result);
 		} catch (Throwable e) {
 			logger.error(e.getMessage(), e);

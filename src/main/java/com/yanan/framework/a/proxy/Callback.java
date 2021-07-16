@@ -19,10 +19,7 @@ public class Callback<T> {
 	}
 	public static <T> Callback<T> newCallback(Object instance) {
 		Callback<T> callback = new Callback<T>();
-		System.err.println(instance);
 		LockSupports.set(instance, Callback.class, callback);
-		Callback<Object> callBack = LockSupports.get(instance, Callback.class);
-		System.err.println("回调:"+callBack);
 		return callback;
 	}
 	public void wrapper(Object multi, Success<Object> success, Failed<Object> failed) {
