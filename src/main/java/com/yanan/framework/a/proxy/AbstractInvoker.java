@@ -33,6 +33,7 @@ public class AbstractInvoker implements Invoker<DispatcherContext<Invokers>>{
 		Object result;
 		try {
 			result = method.invoke(instance, invoker.getInvokeParmeters());
+			System.err.println(result);
 			dispatcherContext.response(result);
 		} catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
 			e.printStackTrace();

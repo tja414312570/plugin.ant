@@ -80,7 +80,10 @@ public class LockSupports {
 	@SuppressWarnings("unchecked")
 	public static <T> T get(Object lock,Object key) {
 		Thread thread = getLockThread(lock);
-		Assert.isNotNull(thread,"thread is null");
+		System.err.println("get:"+lock+"==>"+Thread.currentThread());
+		if(thread == null)
+			return null;
+//		Assert.isNotNull(thread,"thread is null");
 		Map<Object,Object> valueMap = getThreadLocalValue(thread, threadLocal);
 		if(valueMap !=null) {
 			return (T) valueMap.get(key);

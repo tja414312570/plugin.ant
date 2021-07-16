@@ -149,10 +149,12 @@ public class ByteBufferChannelHandler<T> implements ByteBufferChannel<T>{
 						if(this.readBuffer.capacity() / 3 > this.readBuffer.capacity()-this.readBuffer.limit()) {
 							//先压缩
 							compress(readBuffer);
-							//计算需要扩容的容量
-							int len = calculateCapacity(readBuffer.capacity(),messageLen << 1,this.maxBufferSize);
-							//扩容
-							this.readBuffer = ensureCapacity(this.readBuffer,len);
+							if(this.readBuffer.capacity() / 3 > this.readBuffer.capacity()-this.readBuffer.limit()) {
+								//计算需要扩容的容量
+								int len = calculateCapacity(readBuffer.capacity(),messageLen << 1,this.maxBufferSize);
+								//扩容
+								this.readBuffer = ensureCapacity(this.readBuffer,len);
+							}
 						}
 						//如果容量剩余小于包体长度时，也扩容
 						if(messageLen > this.readBuffer.capacity()-this.readBuffer.limit()) {
@@ -261,7 +263,7 @@ public class ByteBufferChannelHandler<T> implements ByteBufferChannel<T>{
 			if(minBufferSize > maxBufferSize)
 				throw new IllegalArgumentException("need buffered size("+minBufferSize+") over flow the max size("+maxBufferSize+")");
 			if(size > maxBufferSize)
-				throw new IllegalArgumentException("the current  size("+size+") over flow the max size("+minBufferSize+")");
+				throw new IllegalArgumentException("the current  size("+size+") over flow the max size("+maxBufferSize+")");
 		}
 //		if(minBufferSize > 0 && size > minBufferSize)
 //			throw new IllegalArgumentException("the current  size("+size+") over flow the min size("+minBufferSize+")");

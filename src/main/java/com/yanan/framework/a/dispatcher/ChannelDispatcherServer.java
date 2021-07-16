@@ -2,6 +2,7 @@ package com.yanan.framework.a.dispatcher;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.slf4j.Logger;
@@ -11,6 +12,7 @@ import com.yanan.framework.a.channel.socket.server.MessageChannelCreateListener;
 import com.yanan.framework.a.core.MessageChannel;
 import com.yanan.framework.a.core.cluster.ChannelManager;
 import com.yanan.framework.a.core.server.ServerMessageChannel;
+import com.yanan.framework.a.proxy.Callback;
 import com.yanan.framework.a.proxy.Invoker;
 import com.yanan.framework.ant.type.MessageType;
 import com.yanan.framework.plugin.PlugsFactory;
@@ -23,6 +25,7 @@ import com.yanan.utils.reflect.TypeToken;
 public class ChannelDispatcherServer<K> implements ChannelDispatcher<K>{
 	
 	private CacheHashMap<K, MessageChannel<MessagePrototype<?>>> messagelChannel = new CacheHashMap<>();
+	private Map<Integer,Callback<Object>> asyncMap = new ConcurrentHashMap<>();
 	private Map<Class<?>, Invoker<DispatcherContext<Object>>> invokerMapping = new HashMap<>();
 	private ThreadLocal<DispatcherContext<?>> dispatcherContextLocal = new InheritableThreadLocal<>();
 	private ChannelManager<?> channelManager;
@@ -71,10 +74,36 @@ public class ChannelDispatcherServer<K> implements ChannelDispatcher<K>{
 			}
 			invoker.execute(dispatcherContext);
 		}else {
-			logger.debug("响应信息:"+message);
-			LockSupports.set(message.getRID(), message.getRID(), message.getInvoker());
-			LockSupports.unLock(message.getRID());
+			Callback<Object> callBack = asyncMap.get(message.getRID());
+			if(callBack != null) {
+				if(message.getType() == MessageType.EXCEPTION) {
+					logger.debug("异步回调异常:"+message);
+					callBack.failed().onException((Exception) message.getInvoker(), dispatcherContext);
+				}else {
+					logger.debug("异步响应信息:"+message+callBack.success());
+					callBack.success().onMessage(message.getInvoker(), dispatcherContext);
+				}
+			}else {
+				if(message.getType() == MessageType.EXCEPTION) {
+					logger.debug("异常信息:"+message);
+				}else {
+					logger.debug("响应信息:"+message);
+				}
+				LockSupports.set(message.getRID(), message.getRID(), message);
+				LockSupports.unLock(message.getRID());
+			}
 		}
+	}
+	@Override
+	public void requestAsync(K channel, Object message, Callback<Object> callBack) {
+		MessageChannel<MessagePrototype<?>> messageChannel = getChannel(channel);
+		logger.debug("请求数据:"+messageChannel);
+		Request<Object> request = new Request<Object>();
+		request.setInvoker(message);
+		request.setRID(count.getAndIncrement());
+		messageChannel.transport(request);
+		logger.debug("异步调用:"+request);
+		asyncMap.put(request.getRID(), callBack);
 	}
 	@Override
 	public Object request(K channel,Object message) {
@@ -86,8 +115,11 @@ public class ChannelDispatcherServer<K> implements ChannelDispatcher<K>{
 		messageChannel.transport(request);
 		//加锁
 		LockSupports.lock(request.getRID());
-		logger.debug("返回数据:"+LockSupports.get(request.getRID(), request.getRID()));
-		return LockSupports.get(request.getRID(), request.getRID());
+		MessagePrototype<Object> messagePrototype = LockSupports.get(request.getRID(), request.getRID());
+		logger.debug("返回数据:"+messagePrototype);
+		if(messagePrototype.getType()==MessageType.EXCEPTION)
+			throw new RuntimeException("remote err message:"+messagePrototype.getInvoker());
+		return messagePrototype.getInvoker();
 	}
 
 	private MessageChannel<MessagePrototype<?>> getChannel(K channel) {
@@ -103,15 +135,10 @@ public class ChannelDispatcherServer<K> implements ChannelDispatcher<K>{
 		return messageChannel;
 	}
 
-	@SuppressWarnings("unchecked")
 	@Override
 	public void bind(Invoker<?> invoker) {
 //		this.invoker = (Invoker<DefaultDispatcherContext<Object>>) invoker;
 	}
 
-	@Override
-	public void requestAsync(K channel, Object request, Callback callBack) {
-		
-	}
 
 }

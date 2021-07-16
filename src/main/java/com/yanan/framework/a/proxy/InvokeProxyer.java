@@ -2,6 +2,7 @@ package com.yanan.framework.a.proxy;
 
 import org.slf4j.Logger;
 
+import com.yanan.framework.a.channel.socket.LockSupports;
 import com.yanan.framework.a.dispatcher.ChannelDispatcher;
 import com.yanan.framework.ant.annotations.AntLock;
 import com.yanan.framework.ant.handler.AntServiceInstance;
@@ -11,6 +12,7 @@ import com.yanan.framework.plugin.annotations.Service;
 import com.yanan.framework.plugin.annotations.Support;
 import com.yanan.framework.plugin.handler.InvokeHandler;
 import com.yanan.framework.plugin.handler.MethodHandler;
+import com.yanan.utils.reflect.ParameterUtils;
 
 /**
  * 调用远程服务的代理类
@@ -35,6 +37,9 @@ public class InvokeProxyer implements InvokeHandler,InvokeProxy{
 		AntLock lock = null;
 		AntServiceInstance clientHandler = null;
 		try {
+			System.err.println(methodHandler.getPlugsProxy().getProxyObject()+"");
+			Callback<Object> callBack = LockSupports.get(methodHandler.getProxy(), Callback.class);
+			System.err.println("回调2:"+callBack);
 			Class<?> clzz = methodHandler.getPlugsProxy().getInterfaceClass();
 			lock = clzz.getAnnotation(AntLock.class);
 			if (lock == null)
@@ -44,7 +49,15 @@ public class InvokeProxyer implements InvokeHandler,InvokeProxy{
 			invokers.setInvokeClass(clzz);
 			invokers.setInvokeParmeters(methodHandler.getParameters());
 			invokers.setInvokeMethod(methodHandler.getMethod());
-			Object result = channelDispatcher.request(rpc.value(),invokers);
+			Object result;
+			if(callBack != null) {
+				logger.debug("使用异步调用方式");
+				result = ParameterUtils.castType(null, methodHandler.getMethod().getReturnType());
+				channelDispatcher.requestAsync(rpc.value(),invokers,callBack);
+			}else {
+				logger.debug("使用同步调用方式");
+				result = channelDispatcher.request(rpc.value(),invokers);
+			}
 			System.err.println("远程返回结果:"+result);
 			methodHandler.interrupt(result);
 		} catch (Throwable e) {
