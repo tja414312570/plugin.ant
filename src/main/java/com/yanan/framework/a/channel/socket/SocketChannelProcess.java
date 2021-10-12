@@ -82,7 +82,7 @@ public class SocketChannelProcess extends AbstractProcess {
 							executorServer.execute(new AbstractProcess() {
 								@Override
 								public void execute() {
-									SocketMessageChannelHandler socketMessageChannelHandler = PlugsFactory.getPluginsInstanceNew(SocketMessageChannelHandler.class);
+									SocketMessageChannelHandler socketMessageChannelHandler = PlugsFactory.getPluginsNewInstance(SocketMessageChannelHandler.class);
 									socketMessageChannelHandler.setSocketChannel(socketChannel);
 									AbstractMessageChannelHandler<SelectionKey> messageChannel = (AbstractMessageChannelHandler<SelectionKey>) socketMessageChannelHandler;
 									((MessageChannel<?>)messageChannel).open();

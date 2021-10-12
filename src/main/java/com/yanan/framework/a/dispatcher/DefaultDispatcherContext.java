@@ -7,7 +7,7 @@ public class DefaultDispatcherContext<T> implements DispatcherContext<T>{
 	protected MessageChannel<Object> messageChannel;
 	protected long requestTime;
 	protected T message;
-	protected ChannelDispatcher<?> channelDispatcher;
+	protected ChannelDispatcher channelDispatcher;
 	protected MessagePrototype<Object> messagePrototype;
 
 	public MessagePrototype<?> getMessagePrototype() {
@@ -38,10 +38,10 @@ public class DefaultDispatcherContext<T> implements DispatcherContext<T>{
 	public void setMessage(T message) {
 		this.message = message;
 	}
-	public ChannelDispatcher<?> getChannelDispatcher() {
+	public ChannelDispatcher getChannelDispatcher() {
 		return channelDispatcher;
 	}
-	public void setChannelDispatcher(ChannelDispatcher<?> channelDispatcher) {
+	public void setChannelDispatcher(ChannelDispatcher channelDispatcher) {
 		this.channelDispatcher = channelDispatcher;
 	}
 

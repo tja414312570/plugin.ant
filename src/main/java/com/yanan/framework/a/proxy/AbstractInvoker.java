@@ -26,13 +26,12 @@ public class AbstractInvoker implements Invoker<DispatcherContext<Invokers>>{
 	@Override
 	public void execute(DispatcherContext<Invokers> dispatcherContext) {
 		logger.debug("invoker:"+dispatcherContext.getMessage()+":"+dispatcherContext);
-		Invokers invoker = dispatcherContext.getMessage();
-		Class<?> invokerClass = invoker.getInvokeClass();
-		Object instance = PlugsFactory.getPluginsInstance(invokerClass);
-		Method method = invoker.getInvokeMethod();
-		Object result;
 		try {
-			result = method.invoke(instance, invoker.getInvokeParmeters());
+			Invokers invoker = dispatcherContext.getMessage();
+			Class<?> invokerClass = invoker.getInvokeClass();
+			Object instance = PlugsFactory.getPluginsInstance(invokerClass);
+			Method method = invoker.getInvokeMethod();
+			Object result = method.invoke(instance, invoker.getInvokeParmeters());
 			System.err.println(result);
 			dispatcherContext.response(result);
 		} catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {

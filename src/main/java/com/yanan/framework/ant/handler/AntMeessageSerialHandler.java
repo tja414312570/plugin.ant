@@ -50,4 +50,10 @@ public class AntMeessageSerialHandler implements AntMessageSerialization{
 		return (T) kryo.readClassAndObject(input);
 	}
 
+	@Override
+	public ByteBuffer serialAntMessage(Object serailBean, AntMessagePrototype message) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
 }

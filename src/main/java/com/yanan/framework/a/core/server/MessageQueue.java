@@ -12,6 +12,7 @@ import com.yanan.framework.ant.exception.AntRuntimeException;
 import com.yanan.framework.ant.model.AntMessagePrototype;
 import com.yanan.framework.ant.service.AntRuntimeService;
 import com.yanan.framework.ant.type.MessageType;
+import com.yanan.framework.ant.utils.AntMessageLock;
 
 public class MessageQueue {
 	/**

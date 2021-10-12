@@ -55,7 +55,7 @@ public class AntMessageLock {
 		return result;
 	}
 
-	protected void setResult(Object result) {
+	public void setResult(Object result) {
 		this.result = result;
 	}
 
@@ -63,7 +63,7 @@ public class AntMessageLock {
 		return exception;
 	}
 
-	protected void setException(Throwable exception) {
+	public void setException(Throwable exception) {
 		this.exception = exception;
 	}
 

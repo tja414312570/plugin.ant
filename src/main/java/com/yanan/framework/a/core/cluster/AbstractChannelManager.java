@@ -23,8 +23,8 @@ public abstract class AbstractChannelManager<K,N> implements ChannelManager<K>{
 	@Service
 	private Logger logger;
 //	private List<ServerMessageChannel<?>> serverMessageChannelList = new CopyOnWriteArrayList<>();
-	private ServerMessageChannel<?> serverMessageChannel;
-	private Class<?> discoveryServer;
+	protected ServerMessageChannel<?> serverMessageChannel;
+	protected Class<?> discoveryServer;
 	@PostConstruct
 	public void init() {
 		discoveryServer =  PlugsFactory.getPluginsHandler(this).getRegisterDefinition().getRegisterClass();
@@ -73,14 +73,15 @@ public abstract class AbstractChannelManager<K,N> implements ChannelManager<K>{
 		N serverName = namingServer.getInstanceName(name);
 		return serverName;
 	}
-	public ServerMessageChannel<?> getServerChannel(){
-		return serverMessageChannel;
+	@SuppressWarnings("unchecked")
+	public <T> ServerMessageChannel<T> getServerChannel(){
+		return (ServerMessageChannel<T>) serverMessageChannel;
 	}
-	public <T,I> MessageChannel<T> getChannel(I name){
+	public <T> MessageChannel<T> getChannel(K name){
 		N serverName = getChannelName(name);
 		return getChannelInstance(serverName);
 	}
-	public <T,I> List<MessageChannel<T>> getChannelList(I name){
+	public <T> List<MessageChannel<T>> getChannelList(K name){
 		N serverName = getChannelName(name);
 		return getChannelInstanceList(serverName);
 	}

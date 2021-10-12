@@ -164,7 +164,7 @@ AbstractMessageChannelHandler<SelectionKey>
 			public void onMessage(Message<MessageType> message) {
 				try {
 					if(message.getMessageType() == MessageType.EXCEPTION) {
-						throw new RuntimeException("remote error message fomr "+socketChannel.getRemoteAddress()+" : "+message.getMessage());
+						throw new RuntimeException("remote error message from "+socketChannel.getRemoteAddress()+" : "+message.getMessage());
 					}
 					messageHandler.onMessage(message.getMessage());
 					logger.debug("accept message from '" + socketChannel.getRemoteAddress() + "':" + message);
@@ -224,7 +224,7 @@ AbstractMessageChannelHandler<SelectionKey>
 				socketChannel = SocketChannel.open();
 				logger.debug("client port:"+this.port);
 				socketChannel.configureBlocking(false);
-				socketChannel.connect(new InetSocketAddress("127.0.0.1",this.port));
+				socketChannel.connect(new InetSocketAddress(this.host,this.port));
 				socketChannel.register(selectorRunningService.getSelector(), SelectionKey.OP_CONNECT);
 				this.setSocketChannel(socketChannel);
 				selectorRunningService.registerChannel(socketChannel);

@@ -22,19 +22,20 @@ import com.yanan.utils.CacheHashMap;
 import com.yanan.utils.reflect.TypeToken;
 
 @Register
-public class ChannelDispatcherServer<K> implements ChannelDispatcher<K>{
+public class ChannelDispatcherServer implements ChannelDispatcher{
 	
-	private CacheHashMap<K, MessageChannel<MessagePrototype<?>>> messagelChannel = new CacheHashMap<>();
+	private CacheHashMap<Object, MessageChannel<MessagePrototype<?>>> messagelChannel = new CacheHashMap<>();
 	private Map<Integer,Callback<Object>> asyncMap = new ConcurrentHashMap<>();
 	private Map<Class<?>, Invoker<DispatcherContext<Object>>> invokerMapping = new HashMap<>();
 	private ThreadLocal<DispatcherContext<?>> dispatcherContextLocal = new InheritableThreadLocal<>();
-	private ChannelManager<?> channelManager;
+	private ChannelManager<Object> channelManager;
 	private AtomicInteger count = new AtomicInteger();
 	@Service
 	private Logger logger;
+	@SuppressWarnings("unchecked")
 	@Override
-	public void bind(ChannelManager<?> server) {
-		this.channelManager = server;
+	public <K> void bind(ChannelManager<K> server) {
+		this.channelManager = (ChannelManager<Object>) server;
 		logger.debug("绑定通道管理:"+server);
 		if(server.getServerChannel() != null) {
 			ServerMessageChannel<MessagePrototype<?>> serverMessageChannel = server.getServerChannel();
@@ -95,7 +96,7 @@ public class ChannelDispatcherServer<K> implements ChannelDispatcher<K>{
 		}
 	}
 	@Override
-	public void requestAsync(K channel, Object message, Callback<Object> callBack) {
+	public <K> void requestAsync(K channel, Object message, Callback<Object> callBack) {
 		MessageChannel<MessagePrototype<?>> messageChannel = getChannel(channel);
 		logger.debug("请求数据:"+messageChannel);
 		Request<Object> request = new Request<Object>();
@@ -106,7 +107,7 @@ public class ChannelDispatcherServer<K> implements ChannelDispatcher<K>{
 		asyncMap.put(request.getRID(), callBack);
 	}
 	@Override
-	public Object request(K channel,Object message) {
+	public <K> Object request(K channel,Object message) {
 		MessageChannel<MessagePrototype<?>> messageChannel = getChannel(channel);
 		logger.debug("请求数据:"+messageChannel);
 		Request<Object> request = new Request<Object>();
@@ -122,7 +123,7 @@ public class ChannelDispatcherServer<K> implements ChannelDispatcher<K>{
 		return messagePrototype.getInvoker();
 	}
 
-	private MessageChannel<MessagePrototype<?>> getChannel(K channel) {
+	private <K> MessageChannel<MessagePrototype<?>> getChannel(K channel) {
 		MessageChannel<MessagePrototype<?>> messageChannel = messagelChannel.get(channel);
 		if(messageChannel == null) {
 			final MessageChannel<MessagePrototype<?>> newMessageChannel = channelManager.getChannel(channel);

@@ -4,13 +4,13 @@ import com.yanan.framework.a.core.cluster.ChannelManager;
 import com.yanan.framework.a.proxy.Callback;
 import com.yanan.framework.a.proxy.Invoker;
 
-public interface ChannelDispatcher<K> {
+public interface ChannelDispatcher {
 
-	void bind(ChannelManager<?> server);
+	<K> void bind(ChannelManager<K> server);
 
-	Object request(K channel,Object request);
+	<K> Object request(K channel,Object request);
 	
-	void requestAsync(K channel,Object request,Callback<Object> callBack);
+	<K> void requestAsync(K channel,Object request,Callback<Object> callBack);
 
 	void bind(Invoker<?> invoker);
 

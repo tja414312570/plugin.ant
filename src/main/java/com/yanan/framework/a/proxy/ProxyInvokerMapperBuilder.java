@@ -23,7 +23,7 @@ public class ProxyInvokerMapperBuilder implements ProxyInvokerMapper{
 	private Logger logger;
 	private InvokeProxy antInvokeProxy;
 	private String[] scanPath = { "classpath:**" };
-	private ChannelDispatcher<?> channelDispatcher;
+	private ChannelDispatcher channelDispatcher;
 
 	public void initProxy() {
 		logger.debug("proxy invoke mapper start");
@@ -77,7 +77,7 @@ public class ProxyInvokerMapperBuilder implements ProxyInvokerMapper{
 	}
 
 	@Override
-	public void bind(ChannelDispatcher<?> channelDispatcher) {
+	public void bind(ChannelDispatcher channelDispatcher) {
 		this.channelDispatcher = channelDispatcher;
 		initProxy();
 	}

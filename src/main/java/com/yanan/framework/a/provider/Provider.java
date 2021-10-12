@@ -5,6 +5,7 @@ import javax.annotation.PostConstruct;
 import org.slf4j.Logger;
 
 import com.yanan.framework.a.core.MessageChannel;
+import com.yanan.framework.a.core.MessageChannelListener;
 import com.yanan.framework.a.core.MessageHandler;
 import com.yanan.framework.plugin.annotations.Register;
 import com.yanan.framework.plugin.annotations.Service;
@@ -32,5 +33,10 @@ public class Provider<T> implements MessageChannel<T>{
 	@Override
 	public void accept(MessageHandler<T> message) {
 		logger.debug("接收消息:"+message);
+	}
+	@Override
+	public void setListener(MessageChannelListener<T> listener) {
+		// TODO Auto-generated method stub
+		
 	}
 }

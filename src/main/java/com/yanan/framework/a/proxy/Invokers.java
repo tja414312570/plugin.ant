@@ -31,7 +31,7 @@ public class Invokers {
 	public Object[] getInvokeParmeters() {
 		return invokeParmeters;
 	}
-	public void setInvokeParmeters(Object[] invokeParmeters) {
+	public void setInvokeParmeters(Object... invokeParmeters) {
 		this.invokeParmeters = invokeParmeters;
 	}
 	@Override

@@ -50,7 +50,7 @@ public class AntChannelProcess extends AbstractProcess {
 			} else if (ops == SelectionKey.OP_CONNECT) {
 				Environment.getEnviroment().distributeEvent(null, null);
 				AntProviderSummary antProviderSummary = (AntProviderSummary) key.attachment();
-				clientInstance = PlugsFactory.getPluginsInstanceNew(ClientInstance.class);
+				clientInstance = PlugsFactory.getPluginsNewInstance(ClientInstance.class);
 				clientInstance.init(clientService, socketChannel,antProviderSummary);
 				clientService.handler(socketChannel, clientInstance);
 				logger.debug("Socket channel connected:" + clientInstance);

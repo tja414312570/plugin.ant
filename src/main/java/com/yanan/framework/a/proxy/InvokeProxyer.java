@@ -25,7 +25,7 @@ public class InvokeProxyer implements InvokeHandler,InvokeProxy{
 	@Service
 	private Logger logger;
 	@Service
-	private ChannelDispatcher<String> channelDispatcher;
+	private ChannelDispatcher channelDispatcher;
 	/**
 	 * 服务中心调用的拦截
 	 */
@@ -77,10 +77,9 @@ public class InvokeProxyer implements InvokeHandler,InvokeProxy{
 
 	}
 
-	@SuppressWarnings("unchecked")
 	@Override
-	public void bind(ChannelDispatcher<?> channelDispatcher) {
-		this.channelDispatcher = (ChannelDispatcher<String>) channelDispatcher;
+	public void bind(ChannelDispatcher channelDispatcher) {
+		this.channelDispatcher = channelDispatcher;
 	}
 
 }

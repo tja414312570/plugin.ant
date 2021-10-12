@@ -17,11 +17,11 @@ public interface ChannelManager<K> {
 	
 	void registerChannel(K name,ServerMessageChannel<?> channel);
 	
-	<T,I> MessageChannel<T> getChannel(I name);
+	<T> MessageChannel<T> getChannel(K name);
 	
-	<T,I> List<MessageChannel<T>> getChannelList(I name);
+	<T> List<MessageChannel<T>> getChannelList(K name);
 	
-	<T,I> Map<String,List<MessageChannel<T>>> getAllChannel();
+	<T> Map<String,List<MessageChannel<T>>> getAllChannel();
 	
 	void start(ServerMessageChannel<?> serverMessageChannel);
 	
