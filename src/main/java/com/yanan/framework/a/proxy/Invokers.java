@@ -3,30 +3,42 @@ package com.yanan.framework.a.proxy;
 import java.lang.reflect.Method;
 import java.util.Arrays;
 
+import com.yanan.utils.reflect.cache.ClassHelper;
+
 public class Invokers {
 	/**
 	 * 消息调用的类
 	 */
-	protected Class<?> invokeClass;
+	protected String invokeClass;
 	/**
 	 * 消息调用的方法
 	 */
-	protected Method invokeMethod;
+	protected String invokeMethod;
 	/**
 	 * 消息参数
 	 */
 	protected Object[] invokeParmeters;
 	public Class<?> getInvokeClass() {
-		return invokeClass;
+		try {
+			return ClassHelper.getClassHelper(invokeClass).getCacheClass();
+		} catch (ClassNotFoundException e) {
+			throw new RuntimeException("class not found!",e);
+		}
 	}
 	public void setInvokeClass(Class<?> invokeClass) {
-		this.invokeClass = invokeClass;
+		this.invokeClass = invokeClass.getName();
 	}
 	public Method getInvokeMethod() {
-		return invokeMethod;
+		Class<?> clzz = getInvokeClass();
+		Method[] methods = clzz.getDeclaredMethods();
+		for(Method method : methods) {
+			if(method.toString().equals(invokeMethod))
+				return method;
+		}
+		throw new RuntimeException("method "+invokeMethod+"not found!");
 	}
 	public void setInvokeMethod(Method invokeMethod) {
-		this.invokeMethod = invokeMethod;
+		this.invokeMethod = invokeMethod.toString();
 	}
 	public Object[] getInvokeParmeters() {
 		return invokeParmeters;

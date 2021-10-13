@@ -1,9 +1,9 @@
 package com.yanan.framework.a.serial;
 
 import java.nio.ByteBuffer;
+import java.util.Arrays;
 
 import com.esotericsoftware.kryo.Kryo;
-import com.esotericsoftware.kryo.KryoException;
 import com.esotericsoftware.kryo.io.ByteBufferInput;
 import com.esotericsoftware.kryo.io.ByteBufferOutput;
 import com.yanan.framework.a.core.MessageSerialization;
@@ -33,7 +33,7 @@ public class MeessageSerialHandler implements MessageSerialization{
 				Kryo kryo = SerialUtils.getKryo();
 				kryo.writeClassAndObject(byteBufferOutput, serailBean);
 				byteBufferOutput.flush();
-			} catch (KryoException e) {
+			} catch (Throwable e) {
 				throw new MessageSerialException("Message body serialization exception ["+serailBean+"]", e);
 			} 
 			return byteBufferOutput.getByteBuffer();
@@ -44,15 +44,19 @@ public class MeessageSerialHandler implements MessageSerialization{
 	}
 
 
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings({ "unchecked", "resource" })
 	@Override
 	public <T> T deserial(ByteBuffer byteBuffer, int position, int limit, Class<T> type) {
-		Kryo kryo = SerialUtils.getKryo();
-//		kryo.register(type);
 		ByteBufferInput input = new ByteBufferInput(byteBuffer);
 		input.setPosition(position);
 		input.setLimit(limit);
+		try {
+		Kryo kryo = SerialUtils.getKryo();
+//		kryo.register(type);
 		return (T) kryo.readClassAndObject(input);
+		}catch(Exception e) {
+			throw new MessageSerialException("Message body deserialization exception "+Arrays.toString(input.getBuffer())+"", e);
+		}
 	}
 
 }

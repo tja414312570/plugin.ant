@@ -10,7 +10,7 @@ public interface ChannelDispatcher {
 
 	<K> Object request(K channel,Object request);
 	
-	<K> void requestAsync(K channel,Object request,Callback<Object> callBack);
+	<K> void requestAsync(K channel,Object request,Callback<?> callBack);
 
 	void bind(Invoker<?> invoker);
 

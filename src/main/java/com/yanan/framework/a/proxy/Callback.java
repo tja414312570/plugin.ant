@@ -4,17 +4,17 @@ import com.yanan.framework.a.channel.socket.LockSupports;
 
 public class Callback<T> {
 	Callback(){}
-	private Failed<Object> failed;
-	private Success<Object> success;
-	public void on(Success<Object> success, Failed<Object> failed) {
+	private Failed<T> failed;
+	private Success<T> success;
+	public void on(Success<T> success, Failed<T> failed) {
 		this.success = success;
 		this.failed = failed;
 	}
-	public Success<Object> success() {
+	public Success<T> success() {
 		return success;
 	}
 
-	public Failed<Object> failed() {
+	public Failed<T> failed() {
 		return failed;
 	}
 	public static <T> Callback<T> newCallback(Object instance) {
@@ -22,7 +22,7 @@ public class Callback<T> {
 		LockSupports.set(instance, Callback.class, callback);
 		return callback;
 	}
-	public void wrapper(Object multi, Success<Object> success, Failed<Object> failed) {
+	public void wrapper(Object multi, Success<T> success, Failed<T> failed) {
 		on(success,failed);
 	}
 }

@@ -23,6 +23,7 @@ import sun.misc.Cleaner;
  * @author yanan
  *
  */
+@SuppressWarnings("restriction")
 @Register(signlTon = false)
 public class ByteBufferChannelHandler<T> implements ByteBufferChannel<T>{
 	/**

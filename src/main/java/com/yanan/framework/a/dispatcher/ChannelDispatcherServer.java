@@ -25,7 +25,7 @@ import com.yanan.utils.reflect.TypeToken;
 public class ChannelDispatcherServer implements ChannelDispatcher{
 	
 	private CacheHashMap<Object, MessageChannel<MessagePrototype<?>>> messagelChannel = new CacheHashMap<>();
-	private Map<Integer,Callback<Object>> asyncMap = new ConcurrentHashMap<>();
+	private Map<Integer,Callback<?>> asyncMap = new ConcurrentHashMap<>();
 	private Map<Class<?>, Invoker<DispatcherContext<Object>>> invokerMapping = new HashMap<>();
 	private ThreadLocal<DispatcherContext<?>> dispatcherContextLocal = new InheritableThreadLocal<>();
 	private ChannelManager<Object> channelManager;
@@ -75,7 +75,7 @@ public class ChannelDispatcherServer implements ChannelDispatcher{
 			}
 			invoker.execute(dispatcherContext);
 		}else {
-			Callback<Object> callBack = asyncMap.get(message.getRID());
+			Callback<?> callBack = asyncMap.get(message.getRID());
 			if(callBack != null) {
 				if(message.getType() == MessageType.EXCEPTION) {
 					logger.debug("异步回调异常:"+message);
@@ -96,7 +96,7 @@ public class ChannelDispatcherServer implements ChannelDispatcher{
 		}
 	}
 	@Override
-	public <K> void requestAsync(K channel, Object message, Callback<Object> callBack) {
+	public <K> void requestAsync(K channel, Object message, Callback<?> callBack) {
 		MessageChannel<MessagePrototype<?>> messageChannel = getChannel(channel);
 		logger.debug("请求数据:"+messageChannel);
 		Request<Object> request = new Request<Object>();
@@ -105,6 +105,7 @@ public class ChannelDispatcherServer implements ChannelDispatcher{
 		messageChannel.transport(request);
 		logger.debug("异步调用:"+request);
 		asyncMap.put(request.getRID(), callBack);
+		
 	}
 	@Override
 	public <K> Object request(K channel,Object message) {

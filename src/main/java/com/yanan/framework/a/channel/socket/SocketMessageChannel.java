@@ -249,7 +249,13 @@ AbstractMessageChannelHandler<SelectionKey>
 			protocolMessage = messageProvider.request(message);
 		}
 		//写入队列
-		this.bufferHandler.write(protocolMessage);
+		try {
+			this.bufferHandler.write(protocolMessage);
+		}catch(RuntimeException e) {
+			logger.error("failed to transport message ! "+message,e);
+			throw e;
+		}
+		
 	}
 	@Override
 	public void accept(MessageHandler<T> messageHandler) {
