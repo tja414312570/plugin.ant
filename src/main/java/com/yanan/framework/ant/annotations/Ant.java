@@ -6,6 +6,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 import com.yanan.framework.ant.type.MessageType;
+
 @Target(ElementType.TYPE )
 @Retention(RetentionPolicy.RUNTIME)
 public @interface Ant {

@@ -1,6 +1,6 @@
 package plugin.ant.a;
 
-import com.yanan.framework.a.channel.socket.LockSupports;
+import com.yanan.framework.ant.channel.socket.LockSupports;
 
 public class LockTest {
 	public static void main(String[] args) {
