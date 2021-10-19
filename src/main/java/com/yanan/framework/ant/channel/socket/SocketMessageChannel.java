@@ -284,7 +284,8 @@ AbstractMessageChannelHandler<SelectionKey>
 //			System.err.println("写入数据:"+socketChannel.finishConnect());
 			if(!socketChannel.finishConnect())
 				throw new NotYetConnectedException();
-			socketChannel.write(buffer);
+			while(buffer.hasRemaining())
+				socketChannel.write(buffer);
 		} catch (IOException e) {
 			throw new WriteAbortedException("ant message write failed!", e);
 		}

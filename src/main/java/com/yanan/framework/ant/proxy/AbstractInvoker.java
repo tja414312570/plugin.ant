@@ -32,7 +32,6 @@ public class AbstractInvoker implements Invoker<DispatcherContext<Invokers>>{
 			Object instance = PlugsFactory.getPluginsInstance(invokerClass);
 			Method method = invoker.getInvokeMethod();
 			Object result = method.invoke(instance, invoker.getInvokeParmeters());
-			System.err.println(result);
 			dispatcherContext.response(result);
 		} catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
 			e.printStackTrace();

@@ -25,11 +25,12 @@ import com.yanan.utils.reflect.TypeToken;
 public class ChannelDispatcherServer implements ChannelDispatcher{
 	
 	private CacheHashMap<Object, MessageChannel<MessagePrototype<?>>> messagelChannel = new CacheHashMap<>();
-	private Map<Integer,Callback<?>> asyncMap = new ConcurrentHashMap<>();
+	private Map<String,Callback<?>> asyncMap = new ConcurrentHashMap<>();
 	private Map<Class<?>, Invoker<DispatcherContext<Object>>> invokerMapping = new HashMap<>();
 	private ThreadLocal<DispatcherContext<?>> dispatcherContextLocal = new InheritableThreadLocal<>();
 	private ChannelManager<Object> channelManager;
 	private AtomicInteger count = new AtomicInteger();
+	
 	@Service
 	private Logger logger;
 	@SuppressWarnings("unchecked")
@@ -60,6 +61,8 @@ public class ChannelDispatcherServer implements ChannelDispatcher{
 		dispatcherContext.setMessageChannel(messageChannel);
 		dispatcherContext.setMessagePrototype(message);
 		dispatcherContextLocal.set(dispatcherContext);
+//		logger.info("调用信息:"+message);
+//		System.err.println("响应:"+message);
 		if(message.getType()==MessageType.REQUEST) {
 			logger.debug("调用信息:"+message);
 			Class<?> invokerClass = message.getInvoker().getClass();
@@ -77,6 +80,7 @@ public class ChannelDispatcherServer implements ChannelDispatcher{
 		}else {
 			Callback<?> callBack = asyncMap.get(message.getRID());
 			if(callBack != null) {
+				asyncMap.remove(message.getRID());
 				if(message.getType() == MessageType.EXCEPTION) {
 					logger.debug("异步回调异常:"+message);
 					callBack.failed().onException((Exception) message.getInvoker(), dispatcherContext);
@@ -90,6 +94,7 @@ public class ChannelDispatcherServer implements ChannelDispatcher{
 				}else {
 					logger.debug("响应信息:"+message);
 				}
+				LockSupports.sureLock(message.getRID());
 				LockSupports.set(message.getRID(), message.getRID(), message);
 				LockSupports.unLock(message.getRID());
 			}
@@ -101,11 +106,11 @@ public class ChannelDispatcherServer implements ChannelDispatcher{
 		logger.debug("请求数据:"+messageChannel);
 		Request<Object> request = new Request<Object>();
 		request.setInvoker(message);
-		request.setRID(count.getAndIncrement());
+		request.setRID(String.valueOf(count.getAndIncrement()));
+		asyncMap.put(request.getRID(), callBack);
 		messageChannel.transport(request);
 		logger.debug("异步调用:"+request);
-		asyncMap.put(request.getRID(), callBack);
-		
+//		System.err.println("发送:"+request);
 	}
 	@Override
 	public <K> Object request(K channel,Object message) {
@@ -113,11 +118,12 @@ public class ChannelDispatcherServer implements ChannelDispatcher{
 		logger.debug("请求数据:"+messageChannel);
 		Request<Object> request = new Request<Object>();
 		request.setInvoker(message);
-		request.setRID(count.getAndIncrement());
+		request.setRID(String.valueOf(count.getAndIncrement()));
 		messageChannel.transport(request);
 		//加锁
 		LockSupports.lock(request.getRID());
 		MessagePrototype<Object> messagePrototype = LockSupports.get(request.getRID(), request.getRID());
+		LockSupports.removeLockThread(request.getRID());
 		logger.debug("返回数据:"+messagePrototype);
 		if(messagePrototype.getType() == MessageType.EXCEPTION)
 			throw new RuntimeException("remote err message:"+messagePrototype.getInvoker());

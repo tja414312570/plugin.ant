@@ -23,7 +23,6 @@ import sun.misc.Cleaner;
  * @author yanan
  *
  */
-@SuppressWarnings("restriction")
 @Register(signlTon = false)
 public class ByteBufferChannelHandler<T> implements ByteBufferChannel<T>{
 	/**
@@ -56,6 +55,8 @@ public class ByteBufferChannelHandler<T> implements ByteBufferChannel<T>{
 	@Service
 	private MessageSerialization serailzation;
 	private BufferReady<T> bufferReady;
+	
+	
 	public ByteBufferChannelHandler() {
 //		setMaxBufferSize(config.getBufferMaxSize());
 //		if (config.getBufferType() == BufferType.DIRECT) {

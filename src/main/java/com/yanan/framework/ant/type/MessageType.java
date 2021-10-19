@@ -42,4 +42,24 @@ public interface MessageType {
 	 * 异步响应结束
 	 */
 	public final static int ASYNC_END = 6;
+
+	public static String getType(int type) {
+		switch (type) {
+		case MessageType.REQUEST:
+			return "REQUEST";
+		case MessageType.RESPONSE:
+			return "RESPONSE";
+		case MessageType.EXCEPTION:
+			return "EXCEPTION";
+		case MessageType.NOTIFY:
+			return "NOTIFY";
+		case MessageType.ASYNC_REQUEST:
+			return "ASYNC_REQUEST";
+		case MessageType.ASYNC_RESPONSE:
+			return "ASYNC_RESPONSE";
+		default:
+			break;
+		}
+		return null;
+	}
 }

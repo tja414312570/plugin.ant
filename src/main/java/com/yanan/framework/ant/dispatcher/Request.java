@@ -9,6 +9,6 @@ public class Request<T> extends MessagePrototype<T>{
 
 	@Override
 	public String toString() {
-		return "Request [RID=" + RID + ", type=" + type + ", invoker=" + invoker + ", timeout=" + timeout + "]";
+		return "Request [RID=" + RID + ", type=" + MessageType.getType(type) + ", invoker=" + invoker + ", timeout=" + timeout + "]";
 	}
 }
