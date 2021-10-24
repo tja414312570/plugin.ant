@@ -1,5 +1,6 @@
 package com.yanan.framework.ant.core.server;
 
+import java.net.URI;
 import java.util.List;
 
 import com.yanan.framework.ant.channel.socket.server.MessageChannelCreateListener;
@@ -11,6 +12,7 @@ import com.yanan.framework.ant.core.MessageChannel;
  *
  */
 public interface ServerMessageChannel<T> {
+	URI getServerAddr();
 	/**
 	 * 获取MessageChannel
 	 * @return

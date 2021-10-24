@@ -5,12 +5,18 @@ import java.io.WriteAbortedException;
 import java.lang.reflect.Field;
 import java.nio.ByteBuffer;
 
+import javax.annotation.PostConstruct;
+
+import org.slf4j.Logger;
+
 import com.yanan.framework.ant.core.BufferReady;
 import com.yanan.framework.ant.core.ByteBufferChannel;
 import com.yanan.framework.ant.core.MessageSerialization;
 import com.yanan.framework.ant.exception.AntMessageResolveException;
+import com.yanan.framework.ant.type.BufferType;
 import com.yanan.framework.plugin.annotations.Register;
 import com.yanan.framework.plugin.annotations.Service;
+import com.yanan.framework.plugin.autowired.enviroment.Variable;
 import com.yanan.utils.ByteUtils;
 
 import sun.misc.Cleaner;
@@ -23,8 +29,12 @@ import sun.misc.Cleaner;
  * @author yanan
  *
  */
+@SuppressWarnings("restriction")
 @Register(signlTon = false)
 public class ByteBufferChannelHandler<T> implements ByteBufferChannel<T>{
+	
+	@Service
+	private Logger log;
 	/**
 	 * 读buffer
 	 */
@@ -44,7 +54,12 @@ public class ByteBufferChannelHandler<T> implements ByteBufferChannel<T>{
 	/**
 	 * 缓冲最大值
 	 */
-	private int maxBufferSize = 1024;
+	@Variable(value="ant.buffer.max",defaultValue = "102400")
+	private int maxBufferSize;
+	@Variable(value="ant.buffer.size",defaultValue = "2048")
+	private int bufferSize;
+	@Variable(value="ant.buffer.type",defaultValue = "DIRECT")
+	private BufferType bufferType;
 	/**
 	 * 溢出包长度
 	 */
@@ -56,16 +71,18 @@ public class ByteBufferChannelHandler<T> implements ByteBufferChannel<T>{
 	private MessageSerialization serailzation;
 	private BufferReady<T> bufferReady;
 	
-	
-	public ByteBufferChannelHandler() {
-//		setMaxBufferSize(config.getBufferMaxSize());
-//		if (config.getBufferType() == BufferType.DIRECT) {
-//			setReadBuffer(ByteBuffer.allocateDirect(config.getBufferSize()));
-//			setWriteBuffer(ByteBuffer.allocateDirect(config.getBufferSize()));
-//		} else {
-			setReadBuffer(ByteBuffer.allocate(2048));
-			setWriteBuffer(ByteBuffer.allocate(2048));
-//		}
+	@PostConstruct
+	public void init() {
+		log.debug("byte buffer size:"+this.bufferSize);
+		log.debug("byte buffer max size:"+this.maxBufferSize);
+		log.debug("byte buffer type:"+this.bufferType);
+		if (bufferType == BufferType.DIRECT) {
+			setReadBuffer(ByteBuffer.allocateDirect(bufferSize));
+			setWriteBuffer(ByteBuffer.allocateDirect(bufferSize));
+		} else {
+			setReadBuffer(ByteBuffer.allocate(bufferSize));
+			setWriteBuffer(ByteBuffer.allocate(bufferSize));
+		}
 	}
 	public int getOutflowPackageLen() {
 		return outflowPackageLen;

@@ -51,8 +51,8 @@ public abstract class AbstractChannelManager<K,N> implements ChannelManager<K>{
 		logger.debug("通道管理类:"+discoveryServer);
 		String nameSchme = channelClass.getSimpleName()+"_"+discoveryServer.getSimpleName();
 		logger.debug("命名规则:"+nameSchme);
-		ChannelNamingServer<K> namingServer = 
-				PlugsFactory.getPluginsInstanceByAttributeStrict(new TypeToken<ChannelNamingServer<K>>() {}.getTypeClass(),
+		ChannelNamingServer<K,ServerMessageChannel<?>> namingServer = 
+				PlugsFactory.getPluginsInstanceByAttributeStrict(new TypeToken<ChannelNamingServer<K,ServerMessageChannel<?>>>() {}.getTypeClass(),
 						nameSchme);
 		Assert.isNotNull(namingServer,"没有找到命名规则服务");
 		K serverName = namingServer.getServerName(channel);

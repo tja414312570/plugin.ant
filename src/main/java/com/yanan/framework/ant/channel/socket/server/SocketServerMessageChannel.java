@@ -3,6 +3,7 @@ package com.yanan.framework.ant.channel.socket.server;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
+import java.net.URI;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
@@ -31,6 +32,7 @@ import com.yanan.framework.plugin.Environment;
 import com.yanan.framework.plugin.ProxyModel;
 import com.yanan.framework.plugin.annotations.Register;
 import com.yanan.framework.plugin.annotations.Service;
+import com.yanan.framework.plugin.autowired.enviroment.Variable;
 import com.yanan.framework.plugin.event.InterestedEventSource;
 
 /**
@@ -38,7 +40,7 @@ import com.yanan.framework.plugin.event.InterestedEventSource;
  * @author yanan
  * @param <T>
  */
-@Register(model = ProxyModel.BOTH)
+@Register(model = ProxyModel.CGLIB)
 public class SocketServerMessageChannel<T> implements ServerMessageChannel<T>,
 ServerMessageChannelLinstener{
 	@Service
@@ -53,8 +55,8 @@ ServerMessageChannelLinstener{
 	@Service
 	public MessageChannelMapping<T> socketMessageChannelMapping; 
 	private ChannelStatus channelStatus = ChannelStatus.CLOSE;
-	private int port;
-	private String host;
+	@Variable(value="socket://{ant.server.addr}",defaultValue = "socket://0.0.0.0:4280")
+	private URI url;
 	private InterestedEventSource channelEvent;
 	private MessageChannelCreateListener<T> channelListener;
 	private ServerSocketChannel serverSocketChannel;
@@ -69,7 +71,6 @@ ServerMessageChannelLinstener{
 		logger.debug("初始化");
 		//初始化消息队列
 		logger.debug("获取序列化工具"+messageSerial);
-		this.port = 4280;
 		channelStatus = ChannelStatus.INIT;
 		Environment.getEnviroment().distributeEvent(channelEvent, ChannelEvent.INIT);
 		
@@ -91,12 +92,6 @@ ServerMessageChannelLinstener{
 	}
 	public ChannelStatus getChannelStatus() {
 		return channelStatus;
-	}
-	public int getPort() {
-		return port;
-	}
-	public String getHost() {
-		return host;
 	}
 	public InterestedEventSource getChannelEvent() {
 		return channelEvent;
@@ -122,11 +117,10 @@ ServerMessageChannelLinstener{
 		logger.debug("远程配置信息");
 		try {
 			serverSocketChannel = ServerSocketChannel.open();
-			logger.debug("listening server port:"+this.port);
+			logger.debug("listening server addr:"+this.url);
 			serverSocketChannel.configureBlocking(false);
 			serverSocketChannel.bind(
-					new InetSocketAddress(
-							Integer.valueOf(port)));
+					new InetSocketAddress(url.getHost(),url.getPort()));
 			serverSocketChannel.register(selectorRunningService.getSelector(), SelectionKey.OP_ACCEPT);
 			selectorRunningService.registerChannel(serverSocketChannel);
 			//初始化读写的bytebuffer  
@@ -170,8 +164,12 @@ ServerMessageChannelLinstener{
 		return "SocketServerMessageChannel [logger=" + logger + ", messageSerial=" + messageSerial
 				+ ", selectorRunningService=" + selectorRunningService + ", messageChanelHadnler="
 				+ messageChanelHadnler + ", channelList=" + channelList + ", socketMessageChannelMapping="
-				+ socketMessageChannelMapping + ", channelStatus=" + channelStatus + ", port=" + port + ", host=" + host
+				+ socketMessageChannelMapping + ", channelStatus=" + channelStatus + ", addr=" + url 
 				+ ", channelEvent=" + channelEvent + ", channelListener=" + channelListener + ", serverSocketChannel="
 				+ serverSocketChannel + "]";
+	}
+	@Override
+	public URI getServerAddr() {
+		return this.url;
 	}
 }
