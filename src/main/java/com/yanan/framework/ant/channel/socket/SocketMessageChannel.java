@@ -31,6 +31,8 @@ import com.yanan.framework.ant.core.MessageChannelListener;
 import com.yanan.framework.ant.core.MessageChannelMapping;
 import com.yanan.framework.ant.core.MessageHandler;
 import com.yanan.framework.ant.core.MessageSerialization;
+import com.yanan.framework.ant.process.AbstractProcess;
+import com.yanan.framework.ant.process.ExecutorServer;
 import com.yanan.framework.plugin.Environment;
 import com.yanan.framework.plugin.ProxyModel;
 import com.yanan.framework.plugin.annotations.Register;
@@ -61,6 +63,9 @@ AbstractMessageChannelHandler<SelectionKey>
 	private MessageHandler<T> messageHandler;
 	@Service
 	private ByteBufferChannel<Message<SocktMessageType>> bufferHandler;
+	
+	@Service
+	private ExecutorServer executorServer;
 	public MessageSerialization getMessageSerial() {
 		return messageSerial;
 	}
@@ -166,7 +171,15 @@ AbstractMessageChannelHandler<SelectionKey>
 					if(message.getMessageType() == SocktMessageType.EXCEPTION) {
 						throw new RuntimeException("remote error message from "+socketChannel.getRemoteAddress()+" : "+message.getMessage());
 					}
-					messageHandler.onMessage(message.getMessage());
+
+					executorServer.execute(new AbstractProcess() {
+						
+						@Override
+						public void execute() {
+							messageHandler.onMessage(message.getMessage());
+						}
+					});
+					
 					logger.debug("accept message from '" + socketChannel.getRemoteAddress() + "':" + message);
 				} catch (IOException e) {
 					throw new BufferHandleException(e);
@@ -250,7 +263,13 @@ AbstractMessageChannelHandler<SelectionKey>
 		}
 		//写入队列
 		try {
-			this.bufferHandler.write(protocolMessage);
+			executorServer.execute(new AbstractProcess() {
+				@Override
+				public void execute() {
+					bufferHandler.write(protocolMessage);
+				}
+			});
+			
 		}catch(RuntimeException e) {
 			logger.error("failed to transport message ! "+message,e);
 			throw e;
@@ -286,6 +305,7 @@ AbstractMessageChannelHandler<SelectionKey>
 				throw new NotYetConnectedException();
 			while(buffer.hasRemaining())
 				socketChannel.write(buffer);
+			System.err.println("写入完成:");
 		} catch (IOException e) {
 			throw new WriteAbortedException("ant message write failed!", e);
 		}

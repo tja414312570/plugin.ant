@@ -121,7 +121,7 @@ public class ByteBufferChannelHandler<T> implements ByteBufferChannel<T>{
 	 * @throws AntMessageResolveException 
 	 * @throws IOException
 	 */
-	public synchronized void handleRead() {
+	public void handleRead() {
 		try {
 			this.bufferReady.handleRead(readBuffer);
 		}finally {
@@ -136,6 +136,7 @@ public class ByteBufferChannelHandler<T> implements ByteBufferChannel<T>{
 				// 缓冲区可用数据长度
 				int available;
 				while ((available = readBuffer.remaining()) > PACKAGE_HEAD_LENGTH) {
+					System.err.println("可用:"+available+Thread.currentThread());
 					int position = readBuffer.position();
 					if(this.outflowPackageLen > 0) {
 						if(available>this.outflowPackageLen) {
@@ -194,6 +195,7 @@ public class ByteBufferChannelHandler<T> implements ByteBufferChannel<T>{
 //					System.out.println((serialPosition+messageLen)+"==>"+available+"==>"+readBuffer.position()+"==>"+readBuffer.limit());
 //							new TypeToken<T>() {}.getTypeClass());
 					readBuffer.limit(serialLimit);
+					System.err.println("读取:"+message);
 					this.bufferReady.onMessage(message);
 //					messageList.add(message);
 				}
@@ -317,14 +319,31 @@ public class ByteBufferChannelHandler<T> implements ByteBufferChannel<T>{
 			return;
 		byte[] infoHead = new byte[4];
 		ByteBuffer messageBuffer = serailzation.serial(message);
-		int len = messageBuffer.remaining();
-		infoHead = ByteUtils.intToBytes(len);
+		int messageLen = messageBuffer.remaining();
+		
+		if(this.writeBuffer.limit() < messageLen  || this.writeBuffer.capacity() / 3 > this.writeBuffer.capacity()-this.writeBuffer.limit()) {
+			//先压缩
+			compress(writeBuffer);
+			if(this.writeBuffer.limit() < messageLen  || this.writeBuffer.capacity() / 3 > this.writeBuffer.capacity()-this.writeBuffer.limit()) {
+				//计算需要扩容的容量
+				int need = messageLen << 1;
+				if(need>this.maxBufferSize)
+					need = this.maxBufferSize;
+				int len = calculateCapacity(writeBuffer.capacity(),need,this.maxBufferSize);
+				//扩容
+				this.writeBuffer = ensureCapacity(this.writeBuffer,len);
+			}
+		}
+		System.err.println("计算容量"+writeBuffer.capacity()+"==>"+messageLen);
+		infoHead = ByteUtils.intToBytes(messageLen);
 		ensureRemaining(writeBuffer, infoHead);
+		System.err.println("写入"+message+Thread.currentThread());
 		while(messageBuffer.hasRemaining()) {
 			if(!writeBuffer.hasRemaining())
 				write(writeBuffer);
 			writeBuffer.put(messageBuffer.get());
 		}
+		
 		write(writeBuffer);
 	}
 	public void write(ByteBuffer buffer) {
