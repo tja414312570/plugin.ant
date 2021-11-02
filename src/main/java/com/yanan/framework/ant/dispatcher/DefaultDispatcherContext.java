@@ -50,5 +50,12 @@ public class DefaultDispatcherContext<T> implements DispatcherContext<T>{
 		messagePrototype.setInvoker(message);
 		messagePrototype.setType(MessageType.RESPONSE);
 		messageChannel.transport(messagePrototype);
+	}
+
+	@Override
+	public void exception(Throwable t) {
+		messagePrototype.setInvoker(t);
+		messagePrototype.setType(MessageType.EXCEPTION);
+		messageChannel.transport(messagePrototype);
 	};
 }

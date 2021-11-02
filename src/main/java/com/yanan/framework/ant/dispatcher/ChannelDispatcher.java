@@ -3,6 +3,7 @@ package com.yanan.framework.ant.dispatcher;
 import com.yanan.framework.ant.core.cluster.ChannelManager;
 import com.yanan.framework.ant.proxy.Callback;
 import com.yanan.framework.ant.proxy.Invoker;
+import com.yanan.framework.ant.proxy.Subscribe;
 
 /**
  * 通道调配器
@@ -37,6 +38,15 @@ public interface ChannelDispatcher {
 	 */
 	<K> void requestAsync(K channel,Object request,Callback<?> callBack);
 
+	/**
+	 * 异步通知请求
+	 * @param <K>
+	 * @param channel
+	 * @param request
+	 * @param callBack
+	 */
+	<K> void subscribe(K channel,Object request,Subscribe<?> callBack);
+	
 	/**
 	 * 绑定数据
 	 * @param invoker

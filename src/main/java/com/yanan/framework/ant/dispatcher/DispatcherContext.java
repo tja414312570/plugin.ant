@@ -20,9 +20,22 @@ public interface DispatcherContext<T> {
 	 */
 	void response(Object message);
 	/**
+	 * 响应异常
+	 * @param t
+	 */
+	void exception(Throwable t);
+	/**
 	 * 消息通道
 	 * @return
 	 */
 	MessageChannel<?> getMessageChannel();
 	
+	/**
+	 * 获取当前请求的上下文
+	 * @return
+	 */
+	@SuppressWarnings("unchecked")
+	public static <K> DispatcherContext<K> getCurrentContext() {
+		return (DispatcherContext<K>) ChannelDispatcherServer.dispatcherContextLocal.get();
+	}
 }

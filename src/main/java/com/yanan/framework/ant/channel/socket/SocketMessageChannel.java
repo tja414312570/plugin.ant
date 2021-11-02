@@ -262,18 +262,18 @@ AbstractMessageChannelHandler<SelectionKey>
 			protocolMessage = messageProvider.request(message);
 		}
 		//写入队列
-		try {
-			executorServer.execute(new AbstractProcess() {
-				@Override
-				public void execute() {
+//		try {
+//			executorServer.execute(new AbstractProcess() {
+//				@Override
+//				public void execute() {
 					bufferHandler.write(protocolMessage);
-				}
-			});
-			
-		}catch(RuntimeException e) {
-			logger.error("failed to transport message ! "+message,e);
-			throw e;
-		}
+//				}
+//			});
+//			
+//		}catch(RuntimeException e) {
+//			logger.error("failed to transport message ! "+message,e);
+//			throw e;
+//		}
 		
 	}
 	@Override
