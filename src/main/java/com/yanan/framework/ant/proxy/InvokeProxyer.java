@@ -27,11 +27,14 @@ public class InvokeProxyer implements InvokeHandler,InvokeProxy{
 	private ChannelDispatcher channelDispatcher;
 	/**
 	 * 服务中心调用的拦截
+	 * @return 
+	 * @throws Throwable 
 	 */
-	public void before(MethodHandler methodHandler) {
+	@Override
+	public Object around(MethodHandler methodHandler) throws Throwable {
 		// 如果其代理类不是服务中心调用代理，则不代理此请求
 		if (!methodHandler.getPlugsProxy().getProxyClass().equals(InvokeProxyer.class))
-			return;
+			return methodHandler.invoke();
 		AntLock lock = null;
 		try {
 			Callback<Object> callBack = LockSupports.get(methodHandler.getProxy(), Callback.class);
@@ -54,22 +57,13 @@ public class InvokeProxyer implements InvokeHandler,InvokeProxy{
 				result = channelDispatcher.request(rpc.value(),invokers);
 				logger.debug("远程返回数据:"+result);
 			}
-			methodHandler.interrupt(result);
+			return result;
 		} catch (Throwable e) {
 			logger.error(e.getMessage(), e);
 			throw new RuntimeException(e);
-		} finally {
-		}
+		} 
 	}
 
-	@Override
-	public void after(MethodHandler methodHandler) {
-	}
-
-	@Override
-	public void error(MethodHandler methodHandler, Throwable e) {
-
-	}
 
 	@Override
 	public void bind(ChannelDispatcher channelDispatcher) {

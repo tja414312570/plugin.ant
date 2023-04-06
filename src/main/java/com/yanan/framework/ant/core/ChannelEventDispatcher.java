@@ -15,54 +15,50 @@ import com.yanan.framework.plugin.handler.MethodHandler;
 public class ChannelEventDispatcher implements InvokeHandler{
 
 	@Override
-	public void before(MethodHandler methodHandler) {
+	public Object around(MethodHandler methodHandler) throws Throwable {
 		InterestedEventSource channelEven = ChannelEventManger.getInstance().getEventSource(methodHandler.getPlugsProxy().getProxyObject());
-		if(channelEven == null)
-			return;
-		switch(methodHandler.getMethod().getName()) {
-		case "open":
-			Environment.getEnviroment().distributeEvent(channelEven, ChannelEvent.OPENING);
-			break;
-		case "close":
-			Environment.getEnviroment().distributeEvent(channelEven, ChannelEvent.CLOSE);
-			break;
-		case "transport":
-			Environment.getEnviroment().distributeEvent(channelEven, ChannelEvent.WRITEING);
-			break;
-		case "accept":
-			Environment.getEnviroment().distributeEvent(channelEven, ChannelEvent.READING);
-			break;
+		if(channelEven != null) {
+			switch(methodHandler.getMethod().getName()) {
+			case "open":
+				Environment.getEnviroment().distributeEvent(channelEven, ChannelEvent.OPENING);
+				break;
+			case "close":
+				Environment.getEnviroment().distributeEvent(channelEven, ChannelEvent.CLOSE);
+				break;
+			case "transport":
+				Environment.getEnviroment().distributeEvent(channelEven, ChannelEvent.WRITEING);
+				break;
+			case "accept":
+				Environment.getEnviroment().distributeEvent(channelEven, ChannelEvent.READING);
+				break;
+			}
+		}
+		try {
+			Object result = methodHandler.invoke();
+			channelEven = ChannelEventManger.getInstance().getEventSource(methodHandler.getPlugsProxy().getProxyObject());
+			if(channelEven != null) {
+				switch(methodHandler.getMethod().getName()) {
+				case "open":
+					Environment.getEnviroment().distributeEvent(channelEven, ChannelEvent.OPEN);
+					break;
+				case "close":
+					Environment.getEnviroment().distributeEvent(channelEven, ChannelEvent.CLOSE);
+					break;
+				case "transport":
+					Environment.getEnviroment().distributeEvent(channelEven, ChannelEvent.OPEN);
+					break;
+				case "accept":
+					Environment.getEnviroment().distributeEvent(channelEven, ChannelEvent.OPEN);
+					break;
+				}
+			}
+			return result;
+		}catch(Exception e) {
+			channelEven = ChannelEventManger.getInstance().getEventSource(methodHandler.getPlugsProxy().getProxyObject());
+			if(channelEven != null) {
+				Environment.getEnviroment().distributeEvent(channelEven, ChannelEvent.EXCEPTION);
+			}
+			throw e;
 		}
 	}
-
-	@Override
-	public void after(MethodHandler methodHandler) {
-		InterestedEventSource channelEven = ChannelEventManger.getInstance().getEventSource(methodHandler.getPlugsProxy().getProxyObject());
-		if(channelEven == null)
-			return;
-		switch(methodHandler.getMethod().getName()) {
-		case "open":
-			Environment.getEnviroment().distributeEvent(channelEven, ChannelEvent.OPEN);
-			break;
-		case "close":
-			Environment.getEnviroment().distributeEvent(channelEven, ChannelEvent.CLOSE);
-			break;
-		case "transport":
-			Environment.getEnviroment().distributeEvent(channelEven, ChannelEvent.OPEN);
-			break;
-		case "accept":
-			Environment.getEnviroment().distributeEvent(channelEven, ChannelEvent.OPEN);
-			break;
-		}
-	}
-
-	@Override
-	public void error(MethodHandler methodHandler, Throwable exception) {
-		System.err.println("调用异常:"+methodHandler.getMethod());
-		InterestedEventSource channelEven = ChannelEventManger.getInstance().getEventSource(methodHandler.getPlugsProxy().getProxyObject());
-		if(channelEven == null)
-			return;
-		Environment.getEnviroment().distributeEvent(channelEven, ChannelEvent.EXCEPTION);
-	}
-	
 }

@@ -137,7 +137,7 @@ public class LockSupports {
 			Field threadLocalField = ClassHelper.getClassHelper(Thread.class).getDeclaredField("threadLocals");
 			Assert.isNotNull(threadLocalField,"field [threadLocals] not found");
 			ReflectUtils.setFieldValue(threadLocalField, thread, null);
-		} catch (IllegalArgumentException | IllegalAccessException e) {
+		} catch (IllegalArgumentException | IllegalAccessException | InvocationTargetException e) {
 			throw new RuntimeException(e);
 		}
 	}

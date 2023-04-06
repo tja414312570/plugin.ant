@@ -2,7 +2,6 @@ package com.yanan.utils.config;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
-import java.text.ParseException;
 
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigValueType;
@@ -56,8 +55,9 @@ public class ConfigHelper {
 				}
 				//判断当前节点是否是一个基本对象
 				if(ParameterUtils.isBaseType(field.getType())) {
-					object = getBaseType(name,field.getType(),config);
+					
 					try {
+						object = getBaseType(name,field.getType(),config);
 						loader.set(field, object);
 					} catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException
 							| NoSuchMethodException | SecurityException e) {
@@ -108,12 +108,8 @@ public class ConfigHelper {
 				}else if (config.getType(name).equals(ConfigValueType.STRING)) {
 					String[] strValues = config.getString(name).split(",");
 					Object values;
-					try {
-						values = ParameterUtils.parseBaseTypeArray(type, strValues, null);
-						return values;
-					} catch (ParseException e) {
-						e.printStackTrace();
-					}
+					values = ParameterUtils.parseBaseTypeArray(type, strValues, null);
+					return values;
 				} 
 			}
 			return null;
